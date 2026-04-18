@@ -1,0 +1,29 @@
+# RAJAPerf benchmark workload for NVIDIA GPUs
+# Build: docker build -f docker/Dockerfile.rajaperf-nvidia -t leo-rajaperf-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+RUN git clone --recursive https://github.com/LLNL/RAJAPerf.git /opt/RAJAPerf
+
+RUN mkdir -p /opt/rajaperf-build && cd /opt/rajaperf-build && \
+    cmake /opt/RAJAPerf \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/rajaperf \
+        -DENABLE_CUDA=ON \
+        -DENABLE_HIP=OFF \
+        -DENABLE_OPENMP=OFF \
+        -DRAJA_ENABLE_CUDA=ON \
+        -DCMAKE_CUDA_ARCHITECTURES=${GPU_ARCH} \
+        -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+        -DCMAKE_CUDA_FLAGS="-lineinfo" \
+        -DBLT_CXX_STD=c++17 \
+        -DCMAKE_CXX_STANDARD=17 \
+    && make -j$(nproc) \
+    && make install
+
+ENV PATH="/opt/rajaperf/bin:${PATH}"
+WORKDIR /opt/leo

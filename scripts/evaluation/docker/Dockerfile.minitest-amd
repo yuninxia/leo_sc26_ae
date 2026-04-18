@@ -1,0 +1,21 @@
+# OpenMP offload minitest for AMD GPUs (single.ompoffload.amdclang)
+# Build: docker build -f docker/Dockerfile.minitest-amd -t leo-minitest-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+#
+# Compiles a simple OpenMP target offload kernel using amdclang++.
+# Used to validate HPCToolkit GPU profiling on OpenMP offload programs.
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+
+# Source is already at /opt/leo/3rdparty/qahpct/minitest/src/ from base image
+RUN cd /opt/leo/3rdparty/qahpct/minitest/src && \
+    amdclang++ -g -O2 -fopenmp --offload-arch=${GPU_TARGET} \
+        -o /opt/minitest-bin single.cc ompgpu.cc -lm \
+    && mkdir -p /opt/minitest/bin \
+    && cp /opt/minitest-bin /opt/minitest/bin/single.ompoffload.amdclang.rocmgpu
+
+ENV PATH="/opt/minitest/bin:${PATH}"
+WORKDIR /opt/leo

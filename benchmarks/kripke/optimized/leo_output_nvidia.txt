@@ -1,0 +1,262 @@
+   Building leo @ file:///opt/leo
+      Built leo @ file:///opt/leo
+Uninstalled 1 package in 1ms
+Installed 1 package in 2ms
+Mode:       Whole-Program Analysis
+Sort by:    stall_cycles
+Top N:      5
+Arch:       h100
+
+Stall breakdown unavailable for PC 0x64640, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x63770, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x63920, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x64b70, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x63930, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 12 / 810 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0xbaa10, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xb8e40, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xba240, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xb7770, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xb8150, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 89 / 915 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x73ce0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x73e30, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x73e30, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x73ce0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x746c0, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 7 / 356 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x79a70, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x78fb0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x78fb0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x78fb0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x796c0, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 5 / 147 edges, used total_stall fallback (conservative pruning)
+====================================================================================================
+                             Leo Whole-Program GPU Performance Analysis                             
+====================================================================================================
+
+Database: /workspace/hpctoolkit-kripke.exe-database
+Measurements: /workspace/hpctoolkit-kripke.exe-measurements
+
+PROGRAM TOTALS
+----------------------------------------------------------------------------------------------------
+  Total Execution Time: 2.0735s
+  Total Stall Cycles:  360,388,231,168
+  Total GPU Cycles:    741,971,329,024
+  Overall Stall Ratio: 48.6%
+  Kernels Analyzed:    5
+  Kernels Skipped:     0
+
+TOP 5 KERNELS BY STALL CYCLES
+----------------------------------------------------------------------------------------------------
+#  Kernel                                      Time (s)      Stall Cycles   Stall %       Sample Rate
+----------------------------------------------------------------------------------------------------
+1  EmptyKernel                                   1.7530   323,995,303,936     49.6%    372.8G/s / 96%
+2  EmptyKernel                                   0.1365    19,051,577,344     46.7%   298.5G/s / 113%
+3  EmptyKernel                                   0.1034    12,736,004,096     43.7%    282.1G/s / 86%
+4  EmptyKernel                                   0.0733     3,987,734,528     23.8%    228.7G/s / 89%
+5  EmptyKernel                                   0.0071       617,611,264     33.9%          257.9G/s
+----------------------------------------------------------------------------------------------------
+
+KERNEL #1: EmptyKernel
+  GPU Binary: bba95d48c52dbb671d7a420ae29a0f03.gpubin
+===========================================================================================================
+                                        Leo GPU Performance Analysis                                       
+===========================================================================================================
+WARNING: Very low profile coverage: 52/2416 (2.2%)
+Kernel: void cub::CUB_200500_900_NS::EmptyKernel<void>()   Architecture: NVIDIA H100
+Total Stall Cycles: 323,995,303,936
+===========================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-----------------------------------------------------------------------------------------------------------
+Stall Location    Stall Opcode     Root Cause Location   Root Opcode                 Cycles % Total Speedup
+-----------------------------------------------------------------------------------------------------------
+LTimes.cpp:62     DFMA        <-- LTimes.cpp:62         LDG.E.64           313,210,699,776   96.7%   1.92x
+LTimes.cpp:62     LDG.E.64    <-- TypedViewBase.hpp:216 LEA.HI.X             1,932,027,856    0.6%   1.00x
+LTimes.cpp:62     STG.E.64    <-- LTimes.cpp:62         DFMA                 1,509,843,277    0.5%   1.00x
+LTimes.cpp:62     LDG.E.64    <-- LTimes.cpp:62         LDG.E.64             1,373,634,560    0.4%   1.00x
+LTimes.cpp:62     STG.E.64    <-- TypedViewBase.hpp:216 LEA.HI.X               880,228,352    0.3%   1.00x
+Iterators.hpp:291 IADD3       <-- Iterators.hpp:291     IADD3                  737,148,928    0.2%   1.00x
+LTimes.cpp:62     LDG.E.64    <-- TypedViewBase.hpp:216 LEA                    729,258,032    0.2%   1.00x
+Iterators.hpp:291 IMAD.X      <-- Iterators.hpp:291     IMAD.X                 624,951,296    0.2%   1.00x
+For.hpp:277       BRA         <-- For.hpp:277           BRA                    612,368,384    0.2%   1.00x
+For.hpp:277       BRA         <-- For.hpp:277           ISETP.NE.AND.EX        593,494,016    0.2%   1.00x
+-----------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-----------------------------------------------------------------------------------------------------------
+  DFMA @ LTimes.cpp:62 ← LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IADD3 @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  169,433,969,935
+  STG.E.64 @ LTimes.cpp:62 ← DFMA @ LTimes.cpp:62 ← LDG.E.64 @ LTimes.cpp:62  906,173,219
+  STG.E.64 @ LTimes.cpp:62 ← DFMA @ LTimes.cpp:62 ← LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IADD3 @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  603,670,057
+  BRA @ For.hpp:277 ← ISETP.NE.AND.EX @ For.hpp:277 ← ISETP.NE.U32.AND @ For.hpp:277  593,494,016
+  STG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IADD3 @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  448,668,273
+  STG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IADD3 @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  430,718,570
+  LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IADD3 @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  378,741,471
+  LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.X @ Operators.hpp:369 ← IMAD.X @ Iterators.hpp:291  326,268,080
+  LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.X @ Operators.hpp:369 ← IMAD.X @ Iterators.hpp:291  321,317,434
+  LDG.E.64 @ LTimes.cpp:62 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.X @ Operators.hpp:369 ← IMAD.X @ Iterators.hpp:291  305,430,711
+-----------------------------------------------------------------------------------------------------------
+===========================================================================================================
+
+KERNEL #2: EmptyKernel
+  GPU Binary: 8c54aa217088fe055e8f6ab62c48d25d.gpubin
+=================================================================================================================
+                                           Leo GPU Performance Analysis                                          
+=================================================================================================================
+Kernel: void cub::CUB_200500_900_NS::EmptyKernel<void>()   Architecture: NVIDIA H100
+Total Stall Cycles: 19,051,577,344
+=================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-----------------------------------------------------------------------------------------------------------------
+Stall Location    Stall Opcode          Root Cause Location   Root Opcode                  Cycles % Total Speedup
+-----------------------------------------------------------------------------------------------------------------
+LPlusTimes.cpp:57 DFMA             <-- LPlusTimes.cpp:57     LDG.E.64             18,443,402,791   96.8%   1.83x
+LPlusTimes.cpp:57 STG.E.64         <-- LPlusTimes.cpp:57     DFMA                    119,525,866    0.6%   1.00x
+For.hpp:277       BRA              <-- For.hpp:277           ISETP.GT.AND.EX          18,874,368    0.1%   1.00x
+LPlusTimes.cpp:57 IADD3.X          <-- LPlusTimes.cpp:57     IADD3.X                  18,874,368    0.1%   1.00x
+For.hpp:277       BRA              <-- For.hpp:277           ISETP.NE.AND.EX          11,534,336    0.1%   1.00x
+Iterators.hpp:291 IADD3            <-- Iterators.hpp:291     IADD3                     9,437,184    0.0%   1.00x
+LPlusTimes.cpp:57 LDG.E.64         <-- LPlusTimes.cpp:57     LDG.E.64                  9,437,184    0.0%   1.00x
+For.hpp:277       BRA              <-- For.hpp:277           ISETP.NE.OR.EX            8,388,608    0.0%   1.00x
+For.hpp:277       ISETP.GT.U32.AND <-- For.hpp:277           ISETP.GT.U32.AND          8,388,608    0.0%   1.00x
+LPlusTimes.cpp:57 LDG.E.64         <-- TypedViewBase.hpp:216 LEA.HI.X                  8,220,704    0.0%   1.00x
+-----------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-----------------------------------------------------------------------------------------------------------------
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← IADD3.X @ LPlusTimes.cpp:57  744,488,487
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  649,278,259
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  535,935,260
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  514,332,845
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← IADD3.X @ LPlusTimes.cpp:57 ← IADD3.X @ LPlusTimes.cpp:57  500,896,689
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  496,391,001
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IADD3.X @ LPlusTimes.cpp:57 ← USHF.L.U64.HI @ For.hpp:277  484,442,112
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA @ TypedViewBase.hpp:216  479,068,160
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  452,984,832
+  DFMA @ LPlusTimes.cpp:57 ← LDG.E.64 @ LPlusTimes.cpp:57 ← LEA @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369  448,940,325
+-----------------------------------------------------------------------------------------------------------------
+=================================================================================================================
+
+KERNEL #3: EmptyKernel
+  GPU Binary: 6c12e08c3c29bdf41eb9a9c8ab760fa6.gpubin
+============================================================================================================
+                                        Leo GPU Performance Analysis                                        
+============================================================================================================
+Kernel: void cub::CUB_200500_900_NS::EmptyKernel<void>()   Architecture: NVIDIA H100
+Total Stall Cycles: 12,745,091,755
+============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+------------------------------------------------------------------------------------------------------------
+Stall Location         Stall Opcode     Root Cause Location    Root Opcode            Cycles % Total Speedup
+------------------------------------------------------------------------------------------------------------
+Hyperplane.hpp:90      BSSY        <-- Hyperplane.hpp:90      BSSY            2,575,302,656   20.2%   1.10x
+Hyperplane.hpp:80      BRA         <-- TypedViewBase.hpp:216  ULDC.64         2,349,848,371   18.4%   1.09x
+SweepSubdomain.cpp:105 DADD        <-- SweepSubdomain.cpp:105 LDG.E.64        1,732,247,552   13.6%   1.06x
+SweepSubdomain.cpp:104 DADD        <-- SweepSubdomain.cpp:104 LDG.E.64        1,498,415,098   11.8%   1.05x
+SweepSubdomain.cpp:96  DFMA        <-- SweepSubdomain.cpp:96  LDG.E.64          976,724,699    7.7%   1.03x
+SweepSubdomain.cpp:96  DFMA        <-- SweepSubdomain.cpp:95  LDG.E.64          848,846,117    6.7%   1.03x
+SweepSubdomain.cpp:106 DADD        <-- SweepSubdomain.cpp:106 LDG.E.64          696,254,464    5.5%   1.02x
+SweepSubdomain.cpp:88  MUFU.RCP64H <-- SweepSubdomain.cpp:88  LDG.E.64          177,209,344    1.4%   1.01x
+SweepSubdomain.cpp:97  DFMA        <-- SweepSubdomain.cpp:97  LDG.E.64          169,869,312    1.3%   1.01x
+SweepSubdomain.cpp:99  DADD        <-- SweepSubdomain.cpp:99  LDG.E.64          138,686,048    1.1%   1.00x
+------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+------------------------------------------------------------------------------------------------------------
+  DADD @ SweepSubdomain.cpp:105 ← LDG.E.64 @ SweepSubdomain.cpp:105 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  870,318,080
+  DADD @ SweepSubdomain.cpp:105 ← LDG.E.64 @ SweepSubdomain.cpp:105 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  861,929,472
+  DADD @ SweepSubdomain.cpp:104 ← LDG.E.64 @ SweepSubdomain.cpp:104 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← LDG.E.64 @ SweepSubdomain.cpp:90 ← IMAD.U32 @ SweepSubdomain.cpp:90  753,926,141
+  DADD @ SweepSubdomain.cpp:104 ← LDG.E.64 @ SweepSubdomain.cpp:104 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  744,488,957
+  DFMA @ SweepSubdomain.cpp:96 ← LDG.E.64 @ SweepSubdomain.cpp:96 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  644,316,487
+  DFMA @ SweepSubdomain.cpp:96 ← LDG.E.64 @ SweepSubdomain.cpp:95 ← LEA.HI.X @ TypedViewBase.hpp:216  596,630,124
+  MUFU.RCP64H @ SweepSubdomain.cpp:88 ← LDG.E.64 @ SweepSubdomain.cpp:88 ← LEA.HI.X @ SweepSubdomain.cpp:88 ← PLOP3.LUT @ Hyperplane.hpp:90 ← ISETP.GT.AND @ Hyperplane.hpp:90 ← IADD3 @ Hyperplane.hpp:85  97,517,568
+  DFMA @ SweepSubdomain.cpp:97 ← LDG.E.64 @ SweepSubdomain.cpp:97 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  96,468,992
+  MUFU.RCP64H @ SweepSubdomain.cpp:88 ← LDG.E.64 @ SweepSubdomain.cpp:88 ← LEA @ SweepSubdomain.cpp:88 ← PLOP3.LUT @ Hyperplane.hpp:90 ← ISETP.GT.AND @ Hyperplane.hpp:90 ← ISETP.GT.AND.EX @ Hyperplane.hpp:90  79,691,776
+  DADD @ SweepSubdomain.cpp:99 ← LDG.E.64 @ SweepSubdomain.cpp:99 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IMAD.IADD @ Operators.hpp:369 ← LDG.E.64 @ SweepSubdomain.cpp:90  77,151,892
+------------------------------------------------------------------------------------------------------------
+============================================================================================================
+
+KERNEL #4: EmptyKernel
+  GPU Binary: 94c1e247fe2992a223f99507db2fcece.gpubin
+===============================================================================================================
+                                          Leo GPU Performance Analysis                                         
+===============================================================================================================
+Kernel: void cub::CUB_200500_900_NS::EmptyKernel<void>()   Architecture: NVIDIA H100
+Total Stall Cycles: 3,987,734,528
+===============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+---------------------------------------------------------------------------------------------------------------
+Stall Location     Stall Opcode          Root Cause Location Root Opcode                 Cycles % Total Speedup
+---------------------------------------------------------------------------------------------------------------
+Scattering.cpp:97  DFMA             <-- Scattering.cpp:97   LDG.E.64             2,203,058,176   55.2%   1.15x
+Operators.hpp:369  IMAD             <-- Scattering.cpp:92   LDG.E.64               220,200,960    5.5%   1.01x
+Scattering.cpp:88  ISETP.GE.U32.AND <-- Scattering.cpp:88   LDG.E                  180,355,072    4.5%   1.01x
+Scattering.cpp:95  DFMA             <-- Scattering.cpp:95   LDG.E.64               117,095,548    2.9%   1.01x
+Iterators.hpp:291  IADD3            <-- Iterators.hpp:291   IADD3                   59,768,832    1.5%   1.00x
+Scattering.cpp:91  BRA              <-- Scattering.cpp:88   ISETP.GE.AND.EX         59,768,832    1.5%   1.00x
+Scattering.cpp:91  BRA              <-- Scattering.cpp:91   BRA                     57,671,680    1.4%   1.00x
+IndexValue.hpp:109 IADD3            <-- Scattering.cpp:88   LDG.E                   56,056,575    1.4%   1.00x
+Operators.hpp:369  ULDC.64          <-- Operators.hpp:369   ULDC.64                 47,185,920    1.2%   1.00x
+IndexValue.hpp:109 IADD3            <-- Scattering.cpp:87   LDG.E.64                42,509,569    1.1%   1.00x
+---------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+---------------------------------------------------------------------------------------------------------------
+  DFMA @ Scattering.cpp:97 ← LDG.E.64 @ Scattering.cpp:97 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  2,008,312,702
+  ISETP.GE.U32.AND @ Scattering.cpp:88 ← LDG.E @ Scattering.cpp:88 ← LEA @ Scattering.cpp:87 ← IADD3 @ Iterators.hpp:291  180,355,072
+  DFMA @ Scattering.cpp:95 ← LDG.E.64 @ Scattering.cpp:95 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.WIDE.U32 @ Operators.hpp:369 ← LDG.E.64 @ Scattering.cpp:92  106,989,273
+  BRA @ Scattering.cpp:91 ← ISETP.GE.AND.EX @ Scattering.cpp:88 ← ISETP.GE.U32.AND @ Scattering.cpp:88 ← LDG.E @ Scattering.cpp:88 ← LEA @ Scattering.cpp:87 ← IADD3 @ Iterators.hpp:291  59,768,832
+  IADD3 @ IndexValue.hpp:109 ← LDG.E @ Scattering.cpp:88 ← LEA @ Scattering.cpp:87 ← IADD3 @ Iterators.hpp:291  56,056,575
+  BRA @ Scattering.cpp:91 ← ISETP.NE.AND.EX @ Scattering.cpp:91 ← ISETP.NE.U32.AND @ Scattering.cpp:91 ← LOP3.LUT @ Scattering.cpp:91 ← IMAD.IADD @ Scattering.cpp:91 ← LDG.E.64 @ Scattering.cpp:87  35,651,584
+  STG.E.64 @ Scattering.cpp:97 ← DFMA @ Scattering.cpp:97 ← LDG.E.64 @ Scattering.cpp:97 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369  20,971,520
+  IMAD.IADD @ Scattering.cpp:91 ← SEL @ Scattering.cpp:91 ← ISETP.GT.AND.EX @ Scattering.cpp:91 ← IMAD.X @ Scattering.cpp:91 ← LDG.E.64 @ Scattering.cpp:87 ← LEA.HI.X @ TypedViewBase.hpp:607  19,922,944
+  SEL @ Scattering.cpp:91 ← ISETP.GT.AND.EX @ Scattering.cpp:91 ← ISETP.GT.U32.AND @ Scattering.cpp:91 ← IADD3 @ IndexValue.hpp:109 ← LDG.E @ Scattering.cpp:88 ← LEA @ Scattering.cpp:87  19,861,286
+  ISETP.GE.U32.AND @ Scattering.cpp:91 ← IADD3 @ Scattering.cpp:91 ← SEL @ Scattering.cpp:91 ← ISETP.GT.AND.EX @ Scattering.cpp:91 ← IMAD.X @ Scattering.cpp:91 ← LDG.E.64 @ Scattering.cpp:87  18,874,368
+---------------------------------------------------------------------------------------------------------------
+===============================================================================================================
+
+KERNEL #5: EmptyKernel
+  GPU Binary: 8704fa537cf4861d27c8d48f4e9e7348.gpubin
+===============================================================================================================
+                                          Leo GPU Performance Analysis                                         
+===============================================================================================================
+WARNING: Very low profile coverage: 104/4048 (2.6%)
+Kernel: void cub::CUB_200500_900_NS::EmptyKernel<void>()   Architecture: NVIDIA H100
+Total Stall Cycles: 617,611,264
+===============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+---------------------------------------------------------------------------------------------------------------
+Stall Location     Stall Opcode         Root Cause Location Root Opcode                  Cycles % Total Speedup
+---------------------------------------------------------------------------------------------------------------
+Population.cpp:58  DMUL            <-- Population.cpp:58   LDG.E.64                310,378,496   50.3%   1.21x
+reduce.hpp:191     B2R.RESULT      <-- reduce.hpp:187      ISETP.EQ.AND            116,391,936   18.8%   1.07x
+intrinsics.hpp:509 BRA             <-- intrinsics.hpp:509  ISETP.GT.U32.AND         83,886,080   13.6%   1.05x
+reduce.hpp:152     ULDC            <-- reduce.hpp:152      ULDC                     11,534,336    1.9%   1.01x
+Operators.hpp:369  DFMA            <-- Population.cpp:58   DMUL                     11,401,681    1.8%   1.01x
+For.hpp:277        BRA             <-- For.hpp:277         ISETP.GE.AND.EX           7,281,431    1.2%   1.00x
+Operators.hpp:369  DADD            <-- Operators.hpp:369   DADD                      5,242,880    0.8%   1.00x
+intrinsics.hpp:108 ERRBAR          <-- intrinsics.hpp:108  ERRBAR                    4,194,304    0.7%   1.00x
+For.hpp:277        ISETP.GE.AND.EX <-- For.hpp:277         IADD3.X                   4,194,303    0.7%   1.00x
+reduce.hpp:194     BRA             <-- reduce.hpp:194      BRA                       3,145,728    0.5%   1.00x
+---------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+---------------------------------------------------------------------------------------------------------------
+  DMUL @ Population.cpp:58 ← LDG.E.64 @ Population.cpp:58 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291 ← IMAD.MOV.U32 @ For.hpp:277  310,378,474
+  DFMA @ Operators.hpp:369 ← DMUL @ Population.cpp:58 ← LDG.E.64 @ Population.cpp:58 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291  11,401,681
+  BRA @ For.hpp:277 ← ISETP.GE.AND.EX @ For.hpp:277 ← IADD3.X @ For.hpp:277   4,164,842
+  BRA @ For.hpp:277 ← ISETP.GE.AND.EX @ For.hpp:277 ← IMAD.X @ For.hpp:277 ← IMAD.MOV.U32 @ For.hpp:277   3,116,589
+  IADD3 @ For.hpp:277 ← IMAD.MOV.U32 @ For.hpp:277 ← S2R @ LoopData.hpp:152   2,097,152
+  BRA @ For.hpp:277 ← ISETP.GT.AND.EX @ policy.hpp:1002 ← IADD3.X @ policy.hpp:1002 ← UIADD3.X @ LoopData.hpp:152   2,097,152
+  LDG.E.64 @ Population.cpp:58 ← LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291 ← IMAD.MOV.U32 @ For.hpp:277 ← S2R @ LoopData.hpp:152   2,097,152
+  LEA.HI.X @ TypedViewBase.hpp:216 ← IMAD.IADD @ Operators.hpp:369 ← IADD3 @ Iterators.hpp:291 ← IMAD.MOV.U32 @ For.hpp:277 ← S2R @ LoopData.hpp:152   1,572,864
+  EXIT @ reduce.hpp:735 ← ISETP.EQ.AND @ reduce.hpp:207 ← IMAD @ reduce.hpp:148   1,048,576
+  ISETP.GE.U32.AND @ reduce.hpp:168 ← IMAD @ reduce.hpp:153 ← LDC @ reduce.hpp:153   1,048,576
+---------------------------------------------------------------------------------------------------------------
+===============================================================================================================
+====================================================================================================

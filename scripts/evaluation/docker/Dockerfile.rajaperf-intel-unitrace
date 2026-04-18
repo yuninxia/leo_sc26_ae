@@ -1,0 +1,19 @@
+# Add unitrace to the Intel RAJAPerf container for per-kernel GPU timing
+# Build: docker build -f docker/Dockerfile.rajaperf-intel-unitrace -t leo-rajaperf-intel-unitrace:latest .
+# Requires: leo-rajaperf-intel:latest
+
+FROM leo-rajaperf-intel:latest
+
+# Build and install unitrace with all its shared libraries
+RUN git clone --depth 1 https://github.com/intel/pti-gpu.git /opt/pti-gpu && \
+    cd /opt/pti-gpu/tools/unitrace && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_WITH_MPI=0 \
+          -DCMAKE_INSTALL_PREFIX=/opt/unitrace \
+          .. && \
+    make -j$(nproc) && \
+    make install
+
+ENV PATH="/opt/unitrace/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/unitrace/lib:${LD_LIBRARY_PATH}"

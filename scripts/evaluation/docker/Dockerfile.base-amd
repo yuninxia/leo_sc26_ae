@@ -1,0 +1,118 @@
+# Base infrastructure for AMD GPU evaluation (MI300A, MI210)
+# Contains: system deps, Python 3.11, uv, meson, cmake, Dyninst, Leo
+# HPCToolkit is in a separate layer — see Dockerfile.hpctoolkit-amd
+# Build: docker build -f docker/Dockerfile.base-amd -t leo-base-amd:latest .
+# Workloads are built separately — see Dockerfile.rajaperf-amd, Dockerfile.llamacpp-amd
+
+FROM rocm/dev-ubuntu-22.04:7.0
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# ============================================
+# System dependencies
+# ============================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-12 g++-12 \
+    cmake \
+    git \
+    wget \
+    curl \
+    ca-certificates \
+    software-properties-common \
+    python3 \
+    python3-pip \
+    python3-venv \
+    pkg-config \
+    ninja-build \
+    libelf-dev \
+    libdw-dev \
+    libiberty-dev \
+    libbz2-dev \
+    libxerces-c-dev \
+    liblzma-dev \
+    libboost-all-dev \
+    libtbb-dev \
+    rocm-smi-lib \
+    rocprofiler-dev \
+    rocprim-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python 3.11 (project requires >=3.11, system has 3.10)
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-dev python3.11-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv (fast Python package manager, used throughout)
+RUN pip3 install --no-cache-dir uv
+
+# Install meson (HPCToolkit uses meson, not cmake)
+RUN uv tool install meson
+
+# Install newer cmake (workloads like RAJAPerf require >= 3.24)
+RUN uv tool install "cmake>=3.24,<4"
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+# ============================================
+# Dyninst (required by HPCToolkit, build from source)
+# ============================================
+WORKDIR /opt
+RUN git clone --depth 1 https://github.com/dyninst/dyninst.git /opt/dyninst-src && \
+    mkdir -p /opt/dyninst-build && cd /opt/dyninst-build && \
+    cmake /opt/dyninst-src \
+        -DCMAKE_INSTALL_PREFIX=/opt/dyninst \
+        -DCMAKE_BUILD_TYPE=Release \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /opt/dyninst-src /opt/dyninst-build
+
+ENV LD_LIBRARY_PATH="/opt/dyninst/lib:/opt/dyninst/lib64"
+
+# ============================================
+# Leo (analysis tool)
+# ============================================
+COPY . /opt/leo
+WORKDIR /opt/leo
+# Use system Python 3.11, GCC 12 for hpcanalysis C++ build
+# Skip all CUDA/NVIDIA packages on AMD container
+ENV CC=gcc-12
+ENV CXX=g++-12
+RUN uv sync --python python3.11 \
+    --no-install-package cudf-cu13 \
+    --no-install-package pylibcudf-cu13 \
+    --no-install-package libcudf-cu13 \
+    --no-install-package libcudf-cu13-internal \
+    --no-install-package cupy-cuda13x \
+    --no-install-package rmm-cu13 \
+    --no-install-package librmm-cu13 \
+    --no-install-package libkvikio-cu13 \
+    --no-install-package cuda-bindings \
+    --no-install-package cuda-core \
+    --no-install-package cuda-pathfinder \
+    --no-install-package cuda-python \
+    --no-install-package cuda-toolkit \
+    --no-install-package numba-cuda \
+    --no-install-package nvidia-cuda-cccl \
+    --no-install-package nvidia-cuda-crt \
+    --no-install-package nvidia-cuda-nvcc \
+    --no-install-package nvidia-cuda-nvrtc \
+    --no-install-package nvidia-cuda-runtime
+
+# ============================================
+# Smoke test: verify Leo import and analysis
+# ============================================
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/amd/hpctoolkit-single.hipoffload.amdclang.rocmgpu-measurements \
+    --arch mi300 --top-n 1
+
+# ============================================
+# Environment
+# ============================================
+ENV GPU_VENDOR=amd
+ENV GPU_TARGET=${GPU_TARGET}
+
+ENTRYPOINT ["/bin/bash"]

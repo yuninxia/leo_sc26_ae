@@ -1,0 +1,230 @@
+   Building leo @ file:///opt/leo
+      Built leo @ file:///opt/leo
+Uninstalled 1 package in 1ms
+Installed 1 package in 1ms
+Mode:       Whole-Program Analysis
+Sort by:    stall_cycles
+Top N:      5
+Arch:       mi300
+
+Stall breakdown unavailable for PC 0xd762c, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcf9cc, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcdf90, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcd294, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcf79c, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 126 / 599 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0xd762c, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcf9cc, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcdf90, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcd294, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xcf79c, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 126 / 599 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0xdbe98, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe54, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe98, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe54, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdb618, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 46 / 129 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0xdbe98, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe54, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe98, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdbe54, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xdb618, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 46 / 129 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x1a86c, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x1a738, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x1a86c, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 3 / 31 edges, used total_stall fallback (conservative pruning)
+====================================================================================================
+                             Leo Whole-Program GPU Performance Analysis                             
+====================================================================================================
+
+Database: /workspace/hpctoolkit-llama-bench-database
+Measurements: /workspace/hpctoolkit-llama-bench-measurements
+
+PROGRAM TOTALS
+----------------------------------------------------------------------------------------------------
+  Total Execution Time: 0.1542s
+  Total Stall Cycles:  17,045,651,456
+  Total GPU Cycles:    24,058,527,744
+  Overall Stall Ratio: 70.9%
+  Kernels Analyzed:    5
+  Kernels Skipped:     0
+
+TOP 5 KERNELS BY STALL CYCLES
+----------------------------------------------------------------------------------------------------
+#  Kernel                                      Time (s)      Stall Cycles   Stall %         Occupancy       Sample Rate
+----------------------------------------------------------------------------------------------------
+1  _ZL9mul_mat_qIL9ggml_type12ELi128ELb0...      0.0089     5,435,817,984     73.0%         0% (vgpr)          841.7G/s
+2  _ZL9mul_mat_qIL9ggml_type12ELi128ELb0...      0.0432     5,435,817,984     73.0%         0% (vgpr)    172.4G/s / 27%
+3  _ZL9mul_mat_qIL9ggml_type14ELi128ELb0...      0.0121       805,306,368     52.2%         0% (vgpr)    127.7G/s / 20%
+4  _ZL9mul_mat_qIL9ggml_type14ELi128ELb0...      0.0027       805,306,368     52.2%         0% (vgpr)    567.5G/s / 89%
+5  Cijk_Alik_Bljk_HHS_BH_GB_MT64x32x8_SN...      0.0059       603,979,776     40.0%        20% (vgpr)    254.5G/s / 40%
+----------------------------------------------------------------------------------------------------
+
+KERNEL #1: _ZL9mul_mat_qIL9ggml_type12ELi128ELb0EEvPKcPKiS...
+  GPU Binary: 913e35bf4bba58046d755ec20ee32439.gpubin
+  Occupancy: 0% (0/40 waves/CU, limited by vgpr) [VGPRs=160, SGPRs=74, LDS=0B]
+===========================================================================================================================================
+                                                        Leo GPU Performance Analysis                                                       
+===========================================================================================================================================
+WARNING: Very low profile coverage: 201/138005 (0.1%)
+Kernel: void mul_mat_q<(ggml_type)12, 128, false>(char const*, int const*, int const*, int const*, float*, float*, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) Architecture: AMD MI300
+Total Stall Cycles: 6,073,352,192
+===========================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-------------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode              Root Cause Location          Root Opcode                      Cycles % Total Speedup
+-------------------------------------------------------------------------------------------------------------------------------------------
+amd_device_functions.h:778:9 s_barrier            <-- amd_device_functions.h:778:9 s_barrier                   637,534,208   10.5%   1.08x
+mmq.cuh:3195:44              global_store_dwordx4 <-- mmq.cuh:3195:44              global_store_dwordx4        335,544,320    5.5%   1.04x
+amd_hip_fp16.h:749:17        s_waitcnt lgkmcnt(0) <-- mmq.cuh:1150:49              ds_read2_b32                234,881,024    3.9%   1.03x
+vecdotq.cuh:28               global_load_dword    <-- vecdotq.cuh:28               global_load_dword           234,881,024    3.9%   1.03x
+mmq.cuh:1150                 ds_read2_b32         <-- mmq.cuh:1150                 ds_read2_b32                201,326,592    3.3%   1.02x
+mmq.cuh:1151                 v_pk_fma_f32         <-- mmq.cuh:1151                 v_pk_fma_f32                201,326,592    3.3%   1.02x
+mmq.cuh:1980:41              s_waitcnt vmcnt(2)   <-- mmq.cuh:1980:14              global_load_dword           167,772,160    2.8%   1.02x
+mmq.cuh:1151:75              s_nop                <-- mmq.cuh:1151:75              s_nop                       167,772,160    2.8%   1.02x
+common.cuh:775:31            ds_read2st64_b64     <-- common.cuh:775:31            ds_read2st64_b64            167,772,160    2.8%   1.02x
+common.cuh:775:31            ds_read_b64          <-- common.cuh:775:31            ds_read_b64                 134,217,728    2.2%   1.02x
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-------------------------------------------------------------------------------------------------------------------------------------------
+  s_waitcnt @ mmq.cuh:3426:27 ← global_load_dword @ mmq.cuh:3426 ← v_mul_lo_u32 @ mmq.cuh:3421:43  33,554,432
+  s_waitcnt @ mmq.cuh:3410:27 ← global_load_dword @ mmq.cuh:3410 ← v_mul_lo_u32 @ mmq.cuh:3405:67  33,554,432
+  s_waitcnt @ mma.cuh:1192:18 ← ds_read_b64 @ common.cuh:775 ← v_add_u32_e32 @ common.cuh:775:31  11,184,811
+  s_waitcnt @ mmq.cuh:3410 ← global_load_dword @ mmq.cuh:3410 ← v_mul_lo_u32 @ mmq.cuh:3405:67   3,728,270
+-------------------------------------------------------------------------------------------------------------------------------------------
+===========================================================================================================================================
+
+KERNEL #2: _ZL9mul_mat_qIL9ggml_type12ELi128ELb0EEvPKcPKiS...
+  GPU Binary: 913e35bf4bba58046d755ec20ee32439.gpubin
+  Occupancy: 0% (0/40 waves/CU, limited by vgpr) [VGPRs=160, SGPRs=74, LDS=0B]
+===========================================================================================================================================
+                                                        Leo GPU Performance Analysis                                                       
+===========================================================================================================================================
+WARNING: Very low profile coverage: 201/138005 (0.1%)
+Kernel: void mul_mat_q<(ggml_type)12, 128, false>(char const*, int const*, int const*, int const*, float*, float*, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) Architecture: AMD MI300
+Total Stall Cycles: 6,073,352,192
+===========================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-------------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode              Root Cause Location          Root Opcode                      Cycles % Total Speedup
+-------------------------------------------------------------------------------------------------------------------------------------------
+amd_device_functions.h:778:9 s_barrier            <-- amd_device_functions.h:778:9 s_barrier                   637,534,208   10.5%   1.08x
+mmq.cuh:3195:44              global_store_dwordx4 <-- mmq.cuh:3195:44              global_store_dwordx4        335,544,320    5.5%   1.04x
+amd_hip_fp16.h:749:17        s_waitcnt lgkmcnt(0) <-- mmq.cuh:1150:49              ds_read2_b32                234,881,024    3.9%   1.03x
+vecdotq.cuh:28               global_load_dword    <-- vecdotq.cuh:28               global_load_dword           234,881,024    3.9%   1.03x
+mmq.cuh:1150                 ds_read2_b32         <-- mmq.cuh:1150                 ds_read2_b32                201,326,592    3.3%   1.02x
+mmq.cuh:1151                 v_pk_fma_f32         <-- mmq.cuh:1151                 v_pk_fma_f32                201,326,592    3.3%   1.02x
+mmq.cuh:1980:41              s_waitcnt vmcnt(2)   <-- mmq.cuh:1980:14              global_load_dword           167,772,160    2.8%   1.02x
+mmq.cuh:1151:75              s_nop                <-- mmq.cuh:1151:75              s_nop                       167,772,160    2.8%   1.02x
+common.cuh:775:31            ds_read2st64_b64     <-- common.cuh:775:31            ds_read2st64_b64            167,772,160    2.8%   1.02x
+common.cuh:775:31            ds_read_b64          <-- common.cuh:775:31            ds_read_b64                 134,217,728    2.2%   1.02x
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-------------------------------------------------------------------------------------------------------------------------------------------
+  s_waitcnt @ mmq.cuh:3426:27 ← global_load_dword @ mmq.cuh:3426 ← v_mul_lo_u32 @ mmq.cuh:3421:43  33,554,432
+  s_waitcnt @ mmq.cuh:3410:27 ← global_load_dword @ mmq.cuh:3410 ← v_mul_lo_u32 @ mmq.cuh:3405:67  33,554,432
+  s_waitcnt @ mma.cuh:1192:18 ← ds_read_b64 @ common.cuh:775 ← v_add_u32_e32 @ common.cuh:775:31  11,184,811
+  s_waitcnt @ mmq.cuh:3410 ← global_load_dword @ mmq.cuh:3410 ← v_mul_lo_u32 @ mmq.cuh:3405:67   3,728,270
+-------------------------------------------------------------------------------------------------------------------------------------------
+===========================================================================================================================================
+
+KERNEL #3: _ZL9mul_mat_qIL9ggml_type14ELi128ELb0EEvPKcPKiS...
+  GPU Binary: 388e8446619416647f1d5f1e4d4bbbb4.gpubin
+  Occupancy: 0% (0/40 waves/CU, limited by vgpr) [VGPRs=165, SGPRs=77, LDS=0B]
+=======================================================================================================================================
+                                                      Leo GPU Performance Analysis                                                     
+=======================================================================================================================================
+WARNING: Very low profile coverage: 58/145557 (0.0%)
+Kernel: void mul_mat_q<(ggml_type)14, 128, false>(char const*, int const*, int const*, int const*, float*, float*, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) Architecture: AMD MI300
+Total Stall Cycles: 1,375,731,712
+=======================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+---------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode            Root Cause Location          Root Opcode                    Cycles % Total Speedup
+---------------------------------------------------------------------------------------------------------------------------------------
+amd_device_functions.h:778:9 s_barrier          <-- amd_device_functions.h:778:9 s_barrier                 167,772,160   12.2%   1.08x
+mmq.cuh:2456                 v_pk_mul_f32       <-- mmq.cuh:2456                 v_pk_mul_f32              134,217,728    9.8%   1.07x
+mmq.cuh:2456                 v_mul_lo_u32       <-- mmq.cuh:2456                 ds_read_i8                100,663,296    7.3%   1.05x
+mmq.cuh:3410:27              s_waitcnt vmcnt(1) <-- mmq.cuh:3410:29              global_load_dword          67,108,864    4.9%   1.03x
+mmq.cuh:2364:55              s_waitcnt vmcnt(0) <-- vecdotq.cuh:22:13            global_load_dword          67,108,864    4.9%   1.03x
+vecdotq.cuh:22:13            global_load_dword  <-- vecdotq.cuh:22:13            global_load_dword          67,108,864    4.9%   1.03x
+mmq.cuh:2320:30              s_waitcnt vmcnt(4) <-- mmq.cuh:2320:30              s_waitcnt vmcnt(4)         67,108,864    4.9%   1.03x
+vecdotq.cuh:22:13            global_load_dword  <-- mmq.cuh:2313:64              v_mad_i64_i32              67,108,864    4.9%   1.03x
+mmq.cuh:3426:27              s_waitcnt vmcnt(8) <-- mmq.cuh:3426                 global_load_dword          33,554,432    2.4%   1.02x
+mmq.cuh:2328:61              v_and_or_b32       <-- mmq.cuh:2328:61              v_and_or_b32               33,554,432    2.4%   1.02x
+---------------------------------------------------------------------------------------------------------------------------------------
+=======================================================================================================================================
+
+KERNEL #4: _ZL9mul_mat_qIL9ggml_type14ELi128ELb0EEvPKcPKiS...
+  GPU Binary: 388e8446619416647f1d5f1e4d4bbbb4.gpubin
+  Occupancy: 0% (0/40 waves/CU, limited by vgpr) [VGPRs=165, SGPRs=77, LDS=0B]
+=======================================================================================================================================
+                                                      Leo GPU Performance Analysis                                                     
+=======================================================================================================================================
+WARNING: Very low profile coverage: 58/145557 (0.0%)
+Kernel: void mul_mat_q<(ggml_type)14, 128, false>(char const*, int const*, int const*, int const*, float*, float*, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) Architecture: AMD MI300
+Total Stall Cycles: 1,375,731,712
+=======================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+---------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode            Root Cause Location          Root Opcode                    Cycles % Total Speedup
+---------------------------------------------------------------------------------------------------------------------------------------
+amd_device_functions.h:778:9 s_barrier          <-- amd_device_functions.h:778:9 s_barrier                 167,772,160   12.2%   1.08x
+mmq.cuh:2456                 v_pk_mul_f32       <-- mmq.cuh:2456                 v_pk_mul_f32              134,217,728    9.8%   1.07x
+mmq.cuh:2456                 v_mul_lo_u32       <-- mmq.cuh:2456                 ds_read_i8                100,663,296    7.3%   1.05x
+mmq.cuh:3410:27              s_waitcnt vmcnt(1) <-- mmq.cuh:3410:29              global_load_dword          67,108,864    4.9%   1.03x
+mmq.cuh:2364:55              s_waitcnt vmcnt(0) <-- vecdotq.cuh:22:13            global_load_dword          67,108,864    4.9%   1.03x
+vecdotq.cuh:22:13            global_load_dword  <-- vecdotq.cuh:22:13            global_load_dword          67,108,864    4.9%   1.03x
+mmq.cuh:2320:30              s_waitcnt vmcnt(4) <-- mmq.cuh:2320:30              s_waitcnt vmcnt(4)         67,108,864    4.9%   1.03x
+vecdotq.cuh:22:13            global_load_dword  <-- mmq.cuh:2313:64              v_mad_i64_i32              67,108,864    4.9%   1.03x
+mmq.cuh:3426:27              s_waitcnt vmcnt(8) <-- mmq.cuh:3426                 global_load_dword          33,554,432    2.4%   1.02x
+mmq.cuh:2328:61              v_and_or_b32       <-- mmq.cuh:2328:61              v_and_or_b32               33,554,432    2.4%   1.02x
+---------------------------------------------------------------------------------------------------------------------------------------
+=======================================================================================================================================
+
+KERNEL #5: Cijk_Alik_Bljk_HHS_BH_GB_MT64x32x8_SN_1LDSB0_APM1_ABV0_ACED0_AF0EM1_AF1EM1_AMAS2_ASE_ASGT_ASLT_ASM_ASAE01_ASCE01_ASEM1_AAC0_BL0_BS1_CLR0_DTLA0_DTLB0_DTVA0_DTVB0_DVO0_ETSP_EPS0_ELFLR0_EMLL0_FSSC10_FL0_GLVWA2_GLVWB1_GRCGA1_GRCGB1_GRPM1_GRVW2_GSU1_GSUASB_GLS0_ISA000_IU1_K1_KLS_LBSPPA0_LBSPPB0_LPA0_LPB0_LDL1_LRVW2_LWPMn1_LDW0_FMA_MIAV0_MDA2_MO40_MMFSC_MKFGSU256_NTA0_NTB0_NTC0_NTD0_NEPBS0_NLCA1_NLCB1_ONLL1_OPLV0_PK0_PAP0_PGR0_PLR1_PKA0_SIA1_SLW1_SS0_SU32_SUM0_SUS256_SCIUI1_SPO0_SRVW0_SSO0_SVW4_SNLL0_TSGRA0_TSGRB0_TT4_2_TLDS0_UMLDSA0_UMLDSB0_U64SL1_USFGRO0_VAW2_VS1_VW2_VWB2_VFLRP0_WSGRA0_WSGRB0_WS64_WG16_16_1_WGM8
+  GPU Binary: 7b658520d79a6fac9270c889bc76d93b.gpubin
+  Occupancy: 20% (8/40 waves/CU, limited by vgpr) [VGPRs=64, SGPRs=46, LDS=1638B]
+====================================================================================================================
+                                            Leo GPU Performance Analysis                                            
+====================================================================================================================
+WARNING: Binary has no debug info (-lineinfo or -G not used)
+WARNING: Binary compiled without debug info (-lineinfo or -G flag)
+WARNING: Instruction-level source mapping will be unavailable
+WARNING: Recompile with -lineinfo for detailed profiling:
+WARNING:   nvcc ... -lineinfo ... -o kernel.cubin
+WARNING: Very low profile coverage: 26/13339 (0.2%)
+Kernel: Cijk_Alik_Bljk_HHS_BH_GB_MT64x32x8_SN_1LDSB0_APM1_ABV0_ACED0_AF0EM1_AF1EM1_AMAS2_ASE_ASGT_ASLT_ASM_ASAE01_ASCE01_ASEM1_AAC0_BL0_BS1_CLR0_DTLA0_DTLB0_DTVA0_DTVB0_DVO0_ETSP_EPS0_ELFLR0_EMLL0_FSSC10_FL0_GLVWA2_GLVWB1_GRCGA1_GRCGB1_GRPM1_GRVW2_GSU1_GSUASB_GLS0_ISA000_IU1_K1_KLS_LBSPPA0_LBSPPB0_LPA0_LPB0_LDL1_LRVW2_LWPMn1_LDW0_FMA_MIAV0_MDA2_MO40_MMFSC_MKFGSU256_NTA0_NTB0_NTC0_NTD0_NEPBS0_NLCA1_NLCB1_ONLL1_OPLV0_PK0_PAP0_PGR0_PLR1_PKA0_SIA1_SLW1_SS0_SU32_SUM0_SUS256_SCIUI1_SPO0_SRVW0_SSO0_SVW4_SNLL0_TSGRA0_TSGRB0_TT4_2_TLDS0_UMLDSA0_UMLDSB0_U64SL1_USFGRO0_VAW2_VS1_VW2_VWB2_VFLRP0_WSGRA0_WSGRB0_WS64_WG16_16_1_WGM8 Architecture: AMD MI300
+Total Stall Cycles: 536,870,912
+====================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+--------------------------------------------------------------------------------------------------------------------
+Stall Location Stall Opcode              Root Cause Location Root Opcode                      Cycles % Total Speedup
+--------------------------------------------------------------------------------------------------------------------
+0x1a8e4        ds_read2_b32         <-- 0x1a8e4             ds_read2_b32                134,217,728   25.0%   1.14x
+0x1a86c        ds_write_b16         <-- 0x1a814             flat_load_dword              67,108,864   12.5%   1.06x
+0x1a888        s_barrier            <-- 0x1a888             s_barrier                    67,108,864   12.5%   1.06x
+0x1a868        s_waitcnt vmcnt(0)   <-- 0x1a814             flat_load_dword              44,739,243    8.3%   1.04x
+0x1a868        s_waitcnt vmcnt(0)   <-- 0x1a3f4             global_store_short           44,739,243    8.3%   1.04x
+0x1a868        s_waitcnt vmcnt(0)   <-- 0x1a81c             flat_load_ushort             44,739,243    8.3%   1.04x
+0x1a824        s_waitcnt lgkmcnt(0) <-- 0x1a824             s_waitcnt lgkmcnt(0)         33,554,432    6.2%   1.03x
+0x1a738        s_add_i32            <-- 0x1a704             s_load_dwordx2               33,554,432    6.2%   1.03x
+0x1a9fc        s_waitcnt lgkmcnt(2) <-- 0x1a8a4             ds_read2_b32                 33,554,432    6.2%   1.03x
+0x1a884        s_waitcnt lgkmcnt(0) <-- 0x1a86c             ds_write_b16                 22,369,621    4.2%   1.02x
+--------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+--------------------------------------------------------------------------------------------------------------------
+  s_waitcnt ← ds_write_b16 ← flat_load_dword  11,184,811
+--------------------------------------------------------------------------------------------------------------------
+====================================================================================================================
+====================================================================================================

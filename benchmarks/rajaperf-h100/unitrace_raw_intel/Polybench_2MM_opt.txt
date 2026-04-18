@@ -1,0 +1,78 @@
+
+
+Reading command line input...
+
+Setting up suite based on input...
+
+
+RAJA performance suite run summary....
+--------------------------------------
+
+How suite will be run:
+	 # passes = 100
+	 Kernel size = Default
+	 Kernel min size = 0
+	 Kernel size factor = 1
+	 Kernel rep factor = 1
+	 Output files will be named ./RAJAPerf*
+
+The following kernels and variants (when available for a kernel) will be run:
+
+Data Spaces
+--------
+Seq - Host
+Sycl - SyclDevice
+
+Reduction Data Spaces
+--------
+Seq - Host
+
+MPI Data Spaces
+--------
+Seq - Host
+
+Variants and Tunings
+--------
+Base_SYCL-block_256
+
+Kernel          ,    Problem size ,    Reps ,    Iterations/rep , Kernels/rep ,    BytesMoved/rep ,    FLOPS/rep ,    BytesTouched/rep ,    BytesRead/rep ,    BytesWritten/rep ,    BytesModifyWritten/rep ,    BytesAtomicModifyWritten/rep ,    BytesAllocated/rep , ChecksumConsistency          , OperationalComplexity  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Polybench_2MM   ,         1000000 ,       1 ,           2000000 ,           2 ,          49920000 ,   5360000000 ,            49920000 ,         33920000 ,            16000000 ,                         0 ,                               0 ,              41920000 , ConsistentPerVariantTuning   , O(N^(3/2))             
+
+
+Run warmup kernels...
+
+Run kernel -- Basic_DAXPY
+
+
+Running specified kernels and variants...
+
+
+Generate run report files...
+
+
+DONE!!!....
+
+=== Device Timing Summary ===
+
+                Total Execution Time (ns):           4579547323
+    Total Device Time for L0 backend (ns):            439532320
+
+== L0 Backend ==
+
+                                                                                                                                                                                         Kernel,        Calls,            Time (ns),     Time (%),         Average (ns),             Min (ns),             Max (ns)
+                                                                                                                                                           "zeCommandListAppendMemoryCopy(H2D)",          502,            156352240,    35.572411,               311458,               246160,               529280
+"rajaperf::polybench::POLYBENCH_2MM::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<2>)#1}",          100,            135780320,    30.892000,              1357803,              1349760,              1367680
+"rajaperf::polybench::POLYBENCH_2MM::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#2}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<2>)#1}",          100,            122470080,    27.863726,              1224700,              1215360,              1232960
+                                                                                                                                                           "zeCommandListAppendMemoryCopy(D2H)",          101,             24913680,     5.668225,               246670,               200880,               449840
+            "rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",            1,                16000,     0.003640,                16000,                16000,                16000
+
+
+=== Kernel Properties ===
+
+                                                                                                                                                                                         Kernel, Compiled, SIMD, Number of Arguments, SLM Per Work Group, Private Memory Per Thread, Spill Memory Per Thread, Register File Size Per Thread
+"rajaperf::polybench::POLYBENCH_2MM::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<2>)#1}",      JIT,   32,                  11,                  0,                         0,                       0,                       unknown
+"rajaperf::polybench::POLYBENCH_2MM::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#2}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<2>)#1}",      JIT,   32,                  11,                  0,                         0,                       0,                       unknown
+            "rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   4,                  0,                         0,                       0,                       unknown
+
+

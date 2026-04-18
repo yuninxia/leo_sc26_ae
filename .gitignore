@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Profiling runs (intermediate data, goes to Zenodo instead)
+benchmarks/*-results-*/
+benchmarks/*-run-*/
+benchmarks/*/build/
+benchmarks/*/build-*/
+**/hpctoolkit-*.d/
+**/hpctoolkit-*.m/
+**/measurement-*/
+
+# Editor / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Nested git directories from benchmark forks (stripped before copy, but safety net)
+benchmarks/*/.git/
+benchmarks/*/.gitmodules
+
+# Local data
+data/hpctoolkit-measurements/
+*.tar.gz
+*.zip
+
+# LaTeX build artifacts (if any AD rebuilt locally)
+*.aux
+*.log
+*.out
+*.nav
+*.snm
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# Local config
+.env
+.env.local
+secrets.yaml

@@ -1,0 +1,17 @@
+{
+  "Apps_MASS3DEA": {"original_ns": 11499164, "optimized_ns": 3142063, "speedup": 3.66},
+  "Apps_LTIMES_NOVIEW": {"original_ns": 4475442, "optimized_ns": 6189278, "speedup": 1.00},
+  "Apps_LTIMES": {"original_ns": 8029989, "optimized_ns": 6070816, "speedup": 1.32},
+  "Polybench_3MM": {"original_ns": 140894224, "optimized_ns": 140920018, "speedup": 1.00},
+  "Polybench_2MM": {"original_ns": 115445022, "optimized_ns": 116316591, "speedup": 1.00},
+  "Polybench_GEMM": {"original_ns": 117050080, "optimized_ns": 117021241, "speedup": 1.00},
+  "Apps_PRESSURE": {"original_ns": 1061580, "optimized_ns": 983753, "speedup": 1.08},
+  "Apps_ENERGY": {"original_ns": 3227238, "optimized_ns": 5339611, "speedup": 1.00},
+  "Apps_FIR": {"original_ns": 915978, "optimized_ns": 915881, "speedup": 1.00},
+  "Apps_ZONAL_ACCUMULATION_3D": {"original_ns": 964075, "optimized_ns": 904394, "speedup": 1.07},
+  "Apps_VOL3D": {"original_ns": 1773419, "optimized_ns": 1652881, "speedup": 1.07},
+  "Apps_DEL_DOT_VEC_2D": {"original_ns": 2094430, "optimized_ns": 2086354, "speedup": 1.00},
+  "Apps_DIFFUSION3DPA": {"original_ns": 3857994, "optimized_ns": 3793015, "speedup": 1.02},
+  "Apps_CONVECTION3DPA": {"original_ns": 3424391, "optimized_ns": 3453791, "speedup": 1.00},
+  "Apps_MASS3DPA": {"original_ns": 1787125, "optimized_ns": 1688851, "speedup": 1.06}
+}

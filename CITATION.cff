@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use LEO or this artifact for research, please cite the SC26 paper."
+title: "LEO: Tracing GPU Stall Root Causes via Cross-Vendor Backward Slicing"
+authors:
+  - family-names: "Xia"
+    given-names: "Yuning"
+    affiliation: "Rice University"
+    email: "yx87@rice.edu"
+    orcid: "https://orcid.org/0009-0008-7065-9659"
+  - family-names: "Mellor-Crummey"
+    given-names: "John"
+    affiliation: "Rice University"
+    email: "johnmc@rice.edu"
+    orcid: "https://orcid.org/0000-0002-9026-5453"
+year: 2026
+version: "1.0-sc26-submission"
+license: Apache-2.0
+repository-code: "https://github.com/yuninxia/leo_sc26_ae"
+preferred-citation:
+  type: conference-paper
+  title: "LEO: Tracing GPU Stall Root Causes via Cross-Vendor Backward Slicing"
+  authors:
+    - family-names: "Xia"
+      given-names: "Yuning"
+    - family-names: "Mellor-Crummey"
+      given-names: "John"
+  conference:
+    name: "SC26: International Conference for High Performance Computing, Networking, Storage and Analysis"
+  year: 2026

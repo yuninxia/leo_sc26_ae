@@ -1,0 +1,19 @@
+# XSBench nuclear cross-section benchmark for NVIDIA GPUs (CUDA backend)
+# Build: docker build -f docker/Dockerfile.xsbench-nvidia -t leo-xsbench-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+RUN git clone --depth 1 https://github.com/ANL-CESAR/XSBench.git /opt/XSBench
+
+RUN cd /opt/XSBench/cuda && \
+    make SM_VERSION=${GPU_ARCH} OPTIMIZE=yes \
+        CFLAGS="-Xcompiler -Wall -Xcompiler -O3 -arch=sm_${GPU_ARCH} -std=c++14 -lineinfo -g" \
+    && mkdir -p /opt/xsbench/bin \
+    && cp XSBench /opt/xsbench/bin/
+
+ENV PATH="/opt/xsbench/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,35 @@
+# QuickSilver Monte Carlo particle transport for AMD GPUs (native HIP backend)
+# Source: LLNL/quicksilver (https://github.com/LLNL/quicksilver)
+# Build flags match HPCToolkit tutorial (rzadams.sh): -fgpu-rdc, -DHAVE_HIP
+# Build: docker build -f docker/Dockerfile.quicksilver-native-amd -t leo-quicksilver-native-amd:latest .
+# Requires: leo-hpctoolkit-amd:latest (build with docker/Dockerfile.hpctoolkit-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Clone LLNL's original QuickSilver (native HIP, not Intel Velocity-Bench port)
+RUN git clone --depth 1 https://github.com/LLNL/quicksilver.git /opt/quicksilver-src
+
+# Build with HPCToolkit tutorial flags (rzadams.sh):
+#   CXX=hipcc
+#   CXXFLAGS=-g
+#   CPPFLAGS="-DHAVE_HIP -x hip --offload-arch=gfx942 -fgpu-rdc -Wno-unused-result"
+#   LDFLAGS="-fgpu-rdc --hip-link --offload-arch=gfx942"
+RUN cd /opt/quicksilver-src/src && \
+    make -j$(nproc) \
+        CXX=hipcc \
+        CXXFLAGS="-g" \
+        CPPFLAGS="-DHAVE_HIP -x hip --offload-arch=${GPU_TARGET} -fgpu-rdc -Wno-unused-result" \
+        LDFLAGS="-fgpu-rdc --hip-link --offload-arch=${GPU_TARGET}" \
+        ROCM_LDFLAGS="-fgpu-rdc --hip-link --offload-arch=${GPU_TARGET}" && \
+    mkdir -p /opt/quicksilver/bin && \
+    cp qs /opt/quicksilver/bin/
+
+# Copy benchmark input files (CORAL2 examples are in the repo)
+RUN cp -r /opt/quicksilver-src/Examples /opt/quicksilver/examples
+
+ENV PATH="/opt/quicksilver/bin:${PATH}"
+WORKDIR /opt/leo

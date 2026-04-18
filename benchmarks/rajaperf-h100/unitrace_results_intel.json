@@ -1,0 +1,4 @@
+{
+  "Apps_LTIMES": {"original_ns": 100, "optimized_ns": 100, "speedup": 1.00},
+  "Apps_MASS3DEA": {"original_ns": 145009440, "optimized_ns": 14163840, "speedup": 10.24}
+}

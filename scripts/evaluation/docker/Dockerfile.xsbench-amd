@@ -1,0 +1,22 @@
+# XSBench nuclear cross-section benchmark for AMD GPUs (HIP backend)
+# Build: docker build -f docker/Dockerfile.xsbench-amd -t leo-xsbench-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Pin to ba08e52 (tested March 2026)
+RUN git clone https://github.com/ANL-CESAR/XSBench.git /opt/XSBench && \
+    cd /opt/XSBench && git checkout ba08e52
+
+RUN cd /opt/XSBench/hip && \
+    make COMPILER=amd OPTIMIZE=yes \
+        CFLAGS="-std=c++14 -O3 --offload-arch=${GPU_TARGET} -g -fno-omit-frame-pointer -include cstring" \
+    && mkdir -p /opt/xsbench/bin \
+    && cp XSBench /opt/xsbench/bin/
+
+ENV PATH="/opt/xsbench/bin:${PATH}"
+WORKDIR /opt/leo

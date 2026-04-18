@@ -1,0 +1,76 @@
+
+
+Reading command line input...
+
+Setting up suite based on input...
+
+
+RAJA performance suite run summary....
+--------------------------------------
+
+How suite will be run:
+	 # passes = 100
+	 Kernel size = Default
+	 Kernel min size = 0
+	 Kernel size factor = 1
+	 Kernel rep factor = 1
+	 Output files will be named ./RAJAPerf*
+
+The following kernels and variants (when available for a kernel) will be run:
+
+Data Spaces
+--------
+Seq - Host
+Sycl - SyclDevice
+
+Reduction Data Spaces
+--------
+Seq - Host
+
+MPI Data Spaces
+--------
+Seq - Host
+
+Variants and Tunings
+--------
+Base_SYCL-block_256
+
+Kernel        ,    Problem size ,    Reps ,    Iterations/rep , Kernels/rep ,    BytesMoved/rep ,    FLOPS/rep ,    BytesTouched/rep ,    BytesRead/rep ,    BytesWritten/rep ,    BytesModifyWritten/rep ,    BytesAtomicModifyWritten/rep ,    BytesAllocated/rep , ChecksumConsistency          , OperationalComplexity  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Apps_LTIMES   ,          999424 ,       1 ,            390400 ,           1 ,          14254592 ,     49971200 ,            11131392 ,         11131392 ,             3123200 ,                   3123200 ,                               0 ,              11131392 , ConsistentPerVariantTuning   , O(N)                   
+
+
+Run warmup kernels...
+
+Run kernel -- Basic_DAXPY
+
+
+Running specified kernels and variants...
+
+
+Generate run report files...
+
+
+DONE!!!....
+
+=== Device Timing Summary ===
+
+                Total Execution Time (ns):           2477853681
+    Total Device Time for L0 backend (ns):             87101200
+
+== L0 Backend ==
+
+                                                                                                                                                                                  Kernel,        Calls,            Time (ns),     Time (%),         Average (ns),             Min (ns),             Max (ns)
+                                                                                                                                                    "zeCommandListAppendMemoryCopy(H2D)",          302,             61797200,    70.948738,               204626,                  720,               443920
+                                                                                                                                                    "zeCommandListAppendMemoryCopy(D2H)",          101,             16781760,    19.266968,               166156,               148160,               413520
+"rajaperf::apps::LTIMES::runSyclVariantImpl<256ul, 0ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<3>)#1}",          100,              8506080,     9.765744,                85060,                84160,                86080
+     "rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",            1,                16160,     0.018553,                16160,                16160,                16160
+
+
+=== Kernel Properties ===
+
+                                                                                                                                                                                  Kernel, Compiled, SIMD, Number of Arguments, SLM Per Work Group, Private Memory Per Thread, Spill Memory Per Thread, Register File Size Per Thread
+"rajaperf::apps::LTIMES::runSyclVariantImpl<256ul, 0ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<3>)#1}",      JIT,   32,                   9,                  0,                         0,                       0,                       unknown
+     "rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   4,                  0,                         0,                       0,                       unknown
+
+

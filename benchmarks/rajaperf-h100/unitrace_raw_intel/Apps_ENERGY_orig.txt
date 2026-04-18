@@ -1,0 +1,86 @@
+
+
+Reading command line input...
+
+Setting up suite based on input...
+
+
+RAJA performance suite run summary....
+--------------------------------------
+
+How suite will be run:
+	 # passes = 100
+	 Kernel size = Default
+	 Kernel min size = 0
+	 Kernel size factor = 1
+	 Kernel rep factor = 1
+	 Output files will be named ./RAJAPerf*
+
+The following kernels and variants (when available for a kernel) will be run:
+
+Data Spaces
+--------
+Seq - Host
+Sycl - SyclDevice
+
+Reduction Data Spaces
+--------
+Seq - Host
+
+MPI Data Spaces
+--------
+Seq - Host
+
+Variants and Tunings
+--------
+Base_SYCL-block_256
+
+Kernel        ,    Problem size ,    Reps ,    Iterations/rep , Kernels/rep ,    BytesMoved/rep ,    FLOPS/rep ,    BytesTouched/rep ,    BytesRead/rep ,    BytesWritten/rep ,    BytesModifyWritten/rep ,    BytesAtomicModifyWritten/rep ,    BytesAllocated/rep , ChecksumConsistency          , OperationalComplexity  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Apps_ENERGY   ,         1000000 ,       1 ,           6000000 ,           6 ,         216000000 ,     55000000 ,           192000000 ,        176000000 ,            40000000 ,                  24000000 ,                               0 ,             120000000 , ConsistentPerVariantTuning   , O(N)                   
+
+
+Run warmup kernels...
+
+Run kernel -- Basic_DAXPY
+
+
+Running specified kernels and variants...
+
+
+Generate run report files...
+
+
+DONE!!!....
+
+=== Device Timing Summary ===
+
+                Total Execution Time (ns):           9953751479
+    Total Device Time for L0 backend (ns):            518371520
+
+== L0 Backend ==
+
+                                                                                                                                                                             Kernel,        Calls,            Time (ns),     Time (%),         Average (ns),             Min (ns),             Max (ns)
+                                                                                                                                               "zeCommandListAppendMemoryCopy(H2D)",         1502,            453243600,    87.436050,               301760,               237440,               491840
+                                                                                                                                               "zeCommandListAppendMemoryCopy(D2H)",          201,             50793520,     9.798671,               252704,               195040,               451600
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#5}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              3720480,     0.717725,                37204,                35360,                39200
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              3031200,     0.584754,                30312,                25760,                43840
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#3}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              2923840,     0.564043,                29238,                28160,                30880
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#4}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              1767520,     0.340976,                17675,                16320,                19040
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#2}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              1532320,     0.295603,                15323,                14720,                16000
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#6}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",          100,              1343200,     0.259119,                13432,                12960,                13920
+"rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",            1,                15840,     0.003056,                15840,                15840,                15840
+
+
+=== Kernel Properties ===
+
+                                                                                                                                                                             Kernel, Compiled, SIMD, Number of Arguments, SLM Per Work Group, Private Memory Per Thread, Spill Memory Per Thread, Register File Size Per Thread
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#5}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                  16,                  0,                         0,                       0,                       unknown
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   7,                  0,                         0,                       0,                       unknown
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#3}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   7,                  0,                         0,                       0,                       unknown
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#4}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   5,                  0,                         0,                       0,                       unknown
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#2}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                  11,                  0,                         0,                       0,                       unknown
+"rajaperf::apps::ENERGY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#6}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                  12,                  0,                         0,                       0,                       unknown
+"rajaperf::basic::DAXPY::runSyclVariantImpl<256ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<1>)#1}",      JIT,   32,                   4,                  0,                         0,                       0,                       unknown
+
+

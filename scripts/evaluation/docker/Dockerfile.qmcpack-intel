@@ -1,0 +1,30 @@
+# QMCPACK quantum Monte Carlo benchmark for Intel GPUs
+# Build: docker build -f docker/Dockerfile.qmcpack-intel -t leo-qmcpack-intel:latest .
+# Requires: leo-base-intel:latest (build with docker/Dockerfile.base-intel first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+# Install QMCPACK dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libhdf5-dev liblapack-dev libblas-dev libboost-all-dev libxml2-dev \
+    intel-ocloc \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/QMCPACK/qmcpack.git /opt/qmcpack-src
+
+RUN mkdir -p /opt/qmcpack-build && cd /opt/qmcpack-build && \
+    cmake /opt/qmcpack-src \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/qmcpack \
+        -DCMAKE_C_COMPILER=icx \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_CXX_FLAGS=-g \
+        -DQMC_GPU_ARCHS=intel_gpu_pvc \
+        -DQMC_MPI=OFF \
+        -DBUILD_UNIT_TESTS=OFF \
+    && make -j$(nproc) qmcpack \
+    && mkdir -p /opt/qmcpack/bin && cp bin/qmcpack /opt/qmcpack/bin/
+
+ENV PATH="/opt/qmcpack/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,34 @@
+# RAJAPerf benchmark workload for AMD GPUs
+# Build: docker build -f docker/Dockerfile.rajaperf-amd -t leo-rajaperf-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Pin to 47aaa7b0 (tested March 2026)
+RUN git clone --recursive https://github.com/LLNL/RAJAPerf.git /opt/RAJAPerf && \
+    cd /opt/RAJAPerf && git checkout 47aaa7b0
+
+RUN mkdir -p /opt/rajaperf-build && cd /opt/rajaperf-build && \
+    cmake /opt/RAJAPerf \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/rajaperf \
+        -DCMAKE_PREFIX_PATH=${ROCM_PATH} \
+        -DCMAKE_CXX_COMPILER=${ROCM_PATH}/bin/hipcc \
+        -DENABLE_HIP=ON \
+        -DENABLE_OPENMP=OFF \
+        -DENABLE_CUDA=OFF \
+        -DRAJA_ENABLE_HIP=ON \
+        -DGPU_TARGETS=${GPU_TARGET} \
+        -DAMDGPU_TARGETS=${GPU_TARGET} \
+        -DCMAKE_HIP_ARCHITECTURES=${GPU_TARGET} \
+        -DBLT_CXX_STD=c++17 \
+        -DCMAKE_CXX_STANDARD=17 \
+    && make -j$(nproc) \
+    && make install
+
+ENV PATH="/opt/rajaperf/bin:${PATH}"
+WORKDIR /opt/leo

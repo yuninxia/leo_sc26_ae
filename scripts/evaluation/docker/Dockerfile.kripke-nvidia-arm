@@ -1,0 +1,29 @@
+# Kripke discrete ordinates transport benchmark for NVIDIA GPUs on ARM (GH200, Grace Hopper)
+# Build: DOCKER_BUILDKIT=0 docker build -f docker/Dockerfile.kripke-nvidia-arm -t leo-kripke-nvidia-arm:latest .
+# Requires: leo-base-nvidia-arm:latest
+
+ARG BASE_TAG=latest
+FROM leo-base-nvidia-arm:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Pin to 5daceb0 (tested March 2026)
+RUN git clone --recursive https://github.com/LLNL/Kripke.git /opt/kripke-src && \
+    cd /opt/kripke-src && git checkout 5daceb0
+
+RUN mkdir -p /opt/kripke-build && cd /opt/kripke-build && \
+    cmake /opt/kripke-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DENABLE_CUDA=On \
+        -DENABLE_MPI=Off \
+        -DENABLE_OPENMP=Off \
+        -DENABLE_CHAI=On \
+        -DCMAKE_CUDA_ARCHITECTURES=${GPU_ARCH} \
+        -DCMAKE_CUDA_FLAGS="-lineinfo --expt-extended-lambda --expt-relaxed-constexpr" \
+        -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+    && make -j$(nproc) \
+    && mkdir -p /opt/kripke/bin \
+    && (cp kripke.exe /opt/kripke/bin/ 2>/dev/null || find . -name kripke.exe -exec cp {} /opt/kripke/bin/ \;)
+
+ENV PATH="/opt/kripke/bin:${PATH}"
+WORKDIR /opt/leo

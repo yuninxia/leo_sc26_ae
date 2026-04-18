@@ -1,0 +1,77 @@
+# CabanaMD molecular dynamics benchmark for AMD GPUs (Kokkos HIP backend)
+# Build: docker build -f docker/Dockerfile.cabanamd-amd -t leo-cabanamd-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+# Four-stage build: ROCm-aware OpenMPI -> Kokkos -> Cabana -> CabanaMD
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Build ROCm-aware OpenMPI from source.
+# Ubuntu's system OpenMPI (4.1.2) lacks ROCm support — it cannot detect GPU device
+# pointers in MPI_Send/Recv, causing segfaults when CabanaMD passes Kokkos HIP
+# views to MPI calls (even for single-rank self-communication).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libtool autoconf automake flex && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 --branch v4.1.7 \
+    https://github.com/open-mpi/ompi.git /opt/openmpi-src && \
+    cd /opt/openmpi-src && git submodule update --init --recursive
+
+RUN cd /opt/openmpi-src && ./autogen.pl && \
+    ./configure --prefix=/opt/openmpi --with-rocm=${ROCM_PATH} \
+        --disable-man-pages --enable-mpi-cxx && \
+    make -j$(nproc) && make install
+
+ENV PATH="/opt/openmpi/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/openmpi/lib:${LD_LIBRARY_PATH}"
+
+# Stage 1: Build Kokkos with HIP
+RUN git clone --depth 1 --branch 4.3.01 https://github.com/kokkos/kokkos.git /opt/kokkos-src
+
+RUN mkdir -p /opt/kokkos-build && cd /opt/kokkos-build && \
+    cmake /opt/kokkos-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/kokkos \
+        -DCMAKE_CXX_COMPILER=${ROCM_PATH}/bin/hipcc \
+        -DCMAKE_CXX_FLAGS="-ggdb -fno-omit-frame-pointer" \
+        -DKokkos_ENABLE_SERIAL=ON \
+        -DKokkos_ENABLE_HIP=ON \
+        -DKokkos_ENABLE_ROCTHRUST=OFF \
+        -DKokkos_ARCH_AMD_GFX942=ON \
+    && make -j$(nproc) && make install
+
+# Stage 2: Build Cabana with HIP-enabled Kokkos
+RUN git clone --depth 1 --branch 0.6.1 https://github.com/ECP-copa/Cabana.git /opt/cabana-src
+
+RUN mkdir -p /opt/cabana-build && cd /opt/cabana-build && \
+    cmake /opt/cabana-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/cabana \
+        -DCMAKE_CXX_COMPILER=${ROCM_PATH}/bin/hipcc \
+        -DCMAKE_CXX_FLAGS="-ggdb -fno-omit-frame-pointer" \
+        -DCMAKE_PREFIX_PATH=/opt/kokkos \
+        -DCabana_REQUIRE_HIP=ON \
+    && make -j$(nproc) && make install
+
+# Stage 3: Build CabanaMD
+RUN git clone --depth 1 https://github.com/ECP-copa/CabanaMD.git /opt/cabanamd-src
+
+RUN mkdir -p /opt/cabanamd-build && cd /opt/cabanamd-build && \
+    cmake /opt/cabanamd-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/cabanamd \
+        -DCMAKE_CXX_COMPILER=${ROCM_PATH}/bin/hipcc \
+        -DCMAKE_CXX_FLAGS="-ggdb -fno-omit-frame-pointer" \
+        -DCMAKE_PREFIX_PATH=/opt/cabana \
+        -DCabanaMD_LAYOUT=6 \
+        -DCabanaMD_VECTORLENGTH=32 \
+    && make -j$(nproc) && make install
+
+# Clean input deck for profiling (VTK dump at 99999 to avoid FPE crash, more timesteps)
+RUN printf 'units\t\tlj\natom_style\tatomic\nnewton off\nlattice\t\tfcc 0.8442\nregion\t\tbox block 0 60 0 60 0 60\ncreate_box\t1 box\ncreate_atoms\t1 box\nmass\t\t1 2.0\nvelocity\tall create 1.4 87287 loop geom\npair_style\tlj/cut 2.5\npair_coeff\t1 1 1.0 1.0 2.5\nneighbor\t0.3 bin\nneigh_modify\tevery 20 one 50\ncomm_modify\tcutoff * 20\nfix\t\t1 all nve\nthermo 100\ndump dmpvtk all vtk 99999 dump%%_*.vtu\nrun\t\t500\n' > /opt/cabanamd-src/input/in.lj.bench
+
+ENV PATH="/opt/cabanamd/bin:${PATH}"
+WORKDIR /opt/leo

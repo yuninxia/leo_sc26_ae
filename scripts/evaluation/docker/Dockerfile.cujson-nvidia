@@ -1,0 +1,40 @@
+# cuJSON GPU JSON parser for NVIDIA GPUs (CUDA)
+# Build: docker build -f docker/Dockerfile.cujson-nvidia -t leo-cujson-nvidia:latest .
+# Requires: leo-hpctoolkit-nvidia:latest
+#
+# cuJSON parses JSON files on the GPU using a 3-phase pipeline:
+#   1. UTF-8 validation
+#   2. Tokenization (structural character detection)
+#   3. Structure recognition (nesting/pairing)
+#
+# Builds both original and optimized binaries for A/B comparison.
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Generate large synthetic JSON dataset first (cached across rebuilds).
+# The included cuJSON samples (300KB) are too small for PC sampling.
+# 2M records (~1GB) for sufficient PC sampling coverage (~800ms parse time).
+COPY scripts/evaluation/docker/cujson/gen_bench_data.py /tmp/gen_bench_data.py
+RUN mkdir -p /opt/cuJSON/dataset && python3 /tmp/gen_bench_data.py 2000000 /opt/cuJSON/dataset/bench_large.json && ls -lh /opt/cuJSON/dataset/bench_large.json
+
+# Build original cuJSON from upstream
+RUN git clone --depth 1 https://github.com/AutomataLab/cuJSON.git /opt/cuJSON-original
+RUN mkdir -p /opt/cuJSON/bin && cd /opt/cuJSON-original && nvcc -O2 -lineinfo -Xcompiler -g main.cu -gencode=arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH} -std=c++17 -w -o /opt/cuJSON/bin/cujson_standard_original
+
+# Copy optimized cuJSON from submodule (local fork with Leo-guided fixes)
+COPY 3rdparty/cuJSON /opt/cuJSON-optimized
+
+# Build optimized standard JSON parser
+RUN cd /opt/cuJSON-optimized && nvcc -O2 -lineinfo -Xcompiler -g main.cu -gencode=arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH} -std=c++17 -w -o /opt/cuJSON/bin/cujson_standard_optimized
+
+# Build JSON Lines parser (from optimized source)
+RUN cd /opt/cuJSON-optimized && nvcc -O2 -lineinfo -Xcompiler -g main_jsonlines.cu -gencode=arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH} -std=c++17 -w -o /opt/cuJSON/bin/cujson_jsonlines
+
+# Default cujson_standard points to optimized for profiling
+RUN ln -sf /opt/cuJSON/bin/cujson_standard_optimized /opt/cuJSON/bin/cujson_standard
+
+ENV PATH="/opt/cuJSON/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,10 @@
+# RAJAPerf source clones (large repos, clone separately)
+original/
+optimized/
+
+# CMake build directories (if built locally)
+build-original/
+build-optimized/
+
+# Profiling output
+profiles/

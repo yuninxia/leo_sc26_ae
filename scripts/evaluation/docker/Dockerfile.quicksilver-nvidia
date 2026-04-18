@@ -1,0 +1,22 @@
+# QuickSilver Monte Carlo particle transport for NVIDIA GPUs (CUDA backend)
+# Source: Intel Velocity Bench (https://github.com/oneapi-src/Velocity-Bench)
+# Build: docker build -f docker/Dockerfile.quicksilver-nvidia -t leo-quicksilver-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+RUN git clone --depth 1 https://github.com/oneapi-src/Velocity-Bench.git /opt/velocity-bench
+
+# Build QuickSilver CUDA with debug info for HPCToolkit source mapping
+RUN cd /opt/velocity-bench/QuickSilver/CUDA/src && \
+    sed -i 's/-O3/-O3 -lineinfo/' Makefile && \
+    make USE_SM=90 CUDA_PATH=/usr/local/cuda -sj && \
+    mkdir -p /opt/quicksilver/bin && \
+    cp qs /opt/quicksilver/bin/
+
+# Copy benchmark input files
+RUN cp -r /opt/velocity-bench/QuickSilver/Examples /opt/quicksilver/examples
+
+ENV PATH="/opt/quicksilver/bin:${PATH}"
+WORKDIR /opt/leo

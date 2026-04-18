@@ -1,0 +1,75 @@
+
+
+Reading command line input...
+
+Setting up suite based on input...
+
+
+RAJA performance suite run summary....
+--------------------------------------
+
+How suite will be run:
+	 # passes = 100
+	 Kernel size = Default
+	 Kernel min size = 0
+	 Kernel size factor = 1
+	 Kernel rep factor = 1
+	 Output files will be named ./RAJAPerf*
+
+The following kernels and variants (when available for a kernel) will be run:
+
+Data Spaces
+--------
+Seq - Host
+Sycl - SyclDevice
+
+Reduction Data Spaces
+--------
+Seq - Host
+
+MPI Data Spaces
+--------
+Seq - Host
+
+Variants and Tunings
+--------
+Base_SYCL-block_64
+
+Kernel                ,    Problem size ,    Reps ,    Iterations/rep , Kernels/rep ,    BytesMoved/rep ,    FLOPS/rep ,    BytesTouched/rep ,    BytesRead/rep ,    BytesWritten/rep ,    BytesModifyWritten/rep ,    BytesAtomicModifyWritten/rep ,    BytesAllocated/rep , ChecksumConsistency          , OperationalComplexity  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Apps_CONVECTION3DPA   ,          421875 ,       1 ,            421875 ,           1 ,          34125288 ,     57546875 ,            30750288 ,         30750288 ,             3375000 ,                   3375000 ,                               0 ,              30750288 , ConsistentPerVariantTuning   , O(N)                   
+
+
+Run warmup kernels...
+
+Run kernel -- Basic_DAXPY
+		Skipping block_256 tuning
+
+
+Running specified kernels and variants...
+
+
+Generate run report files...
+
+
+DONE!!!....
+
+=== Device Timing Summary ===
+
+                Total Execution Time (ns):           3569993122
+    Total Device Time for L0 backend (ns):            164701120
+
+== L0 Backend ==
+
+                                                                                                                                                                                    Kernel,        Calls,            Time (ns),     Time (%),         Average (ns),             Min (ns),             Max (ns)
+                                                                                                                                                      "zeCommandListAppendMemoryCopy(H2D)",          600,            140557920,    85.341202,               234263,                   80,              1230240
+                                                                                                                                                      "zeCommandListAppendMemoryCopy(D2H)",          100,             14180800,     8.610021,               141808,                83920,               224480
+"rajaperf::apps::CONVECTION3DPA::runSyclVariantImpl<64ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<3>)#1}",          100,              9962400,     6.048775,                99624,                96320,               100160
+
+
+=== Kernel Properties ===
+
+                                                                                                                                                                                    Kernel, Compiled, SIMD, Number of Arguments, SLM Per Work Group, Private Memory Per Thread, Spill Memory Per Thread, Register File Size Per Thread
+"rajaperf::apps::CONVECTION3DPA::runSyclVariantImpl<64ul>(rajaperf::VariantID)::{lambda(sycl::_V1::handler&)#1}::operator()(sycl::_V1::handler&) const::{lambda(sycl::_V1::nd_item<3>)#1}",      JIT,   32,                  12,                  0,                         0,                       0,                       unknown
+
+

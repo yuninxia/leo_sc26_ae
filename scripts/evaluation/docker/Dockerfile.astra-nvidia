@@ -1,0 +1,60 @@
+# Astra CUDA Kernel Optimizer for NVIDIA GPUs
+# LLM-driven multi-agent system that automatically optimizes CUDA kernels.
+# Build: docker build -f docker/Dockerfile.astra-nvidia -t leo-astra-nvidia:latest .
+# Requires: leo-hpctoolkit-nvidia:latest (build with build_containers.sh first)
+#
+# Usage:
+#   Standalone benchmark (no API key needed):
+#     docker run --rm --gpus all leo-astra-nvidia:latest \
+#       bash -c "cd /opt/astra/test/rms && python3.11 rmsnorm_test.py"
+#
+#   Full optimizer (needs OPENAI_API_KEY):
+#     docker run --rm --gpus all -e OPENAI_API_KEY=sk-... leo-astra-nvidia:latest \
+#       python3.11 /opt/astra/cuda_kernel_optimizer_multi.py \
+#         --initial-kernel-path /opt/astra/test/rms/rms_v1.cu \
+#         --compare-kind rmsnorm \
+#         --baseline-func fused_add_rmsnorm \
+#         --generated-export-func sgl_fused_add_rmsnorm
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# ninja for fast torch.utils.cpp_extension JIT builds
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ninja-build \
+    && rm -rf /var/lib/apt/lists/*
+
+# PyTorch 2.9.1 with CUDA 12.6 support (matches base image nvidia/cuda:12.6.3)
+# Pin to 2.9.1 — sgl-kernel is compiled against this version's C++ ABI
+RUN uv pip install --system --python python3.11 --no-cache \
+    "torch==2.9.1" --index-url https://download.pytorch.org/whl/cu126
+
+# Astra Python dependencies
+RUN uv pip install --system --python python3.11 --no-cache \
+    sgl-kernel \
+    openai \
+    openai-agents \
+    numpy \
+    matplotlib \
+    pandas \
+    tqdm \
+    pycuda \
+    nvidia-ml-py
+
+# Copy Astra source and Leo profiling driver
+COPY 3rdparty/Astra /opt/astra
+COPY scripts/evaluation/astra_profile_driver.cu /opt/astra/astra_profile_driver.cu
+
+# JIT compile cache (separate from source for clean volume mounts)
+ENV TORCH_EXTENSIONS_DIR=/opt/astra-jit-cache
+RUN mkdir -p /opt/astra-jit-cache
+
+# Smoke test: verify Python imports (no GPU needed at build time)
+# sgl_kernel requires GPU at import time (detects compute capability), skip in build
+RUN python3.11 -c "import torch; print('torch', torch.__version__); \
+    import openai; print('openai OK'); \
+    import pathlib; assert pathlib.Path('/usr/local/lib/python3.11/dist-packages/sgl_kernel').exists(), 'sgl_kernel not installed'; print('sgl_kernel installed')"
+
+WORKDIR /opt/astra

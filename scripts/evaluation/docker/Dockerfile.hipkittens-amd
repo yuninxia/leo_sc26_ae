@@ -1,0 +1,79 @@
+# HipKittens kernel suite for AMD GPUs (HIP/ROCm)
+# GEMM (BF16->FP32 1024-16384), LayerNorm (BF16 B=16 N=1024-16384 D=2048),
+# RMSNorm (BF16 B=16 N=4096 D=128), RMSNorm-Optimized, RMSNorm-Pipelined
+# Build: docker build -f docker/Dockerfile.hipkittens-amd -t leo-hipkittens-amd:latest .
+# Requires: leo-hpctoolkit-amd:latest
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Install PyTorch ROCm + pybind11 for running upstream test_python.py
+# rocrand-dev needed by LayerNorm kernel (dropout)
+# Placed before git clone so this layer is cached across source code changes
+RUN apt-get update && apt-get install -y --no-install-recommends rocrand-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir pybind11 tqdm numpy && \
+    pip install --pre --no-cache-dir torch --index-url https://download.pytorch.org/whl/nightly/rocm7.0
+
+# Clone HipKittens (fork with pipelined RMSNorm optimization)
+# Pass --build-arg CACHEBUST=$(date +%s) to force re-clone after remote push
+ARG CACHEBUST=0
+ARG HIPKITTENS_REPO=https://github.com/yuninxia/HipKittens.git
+ARG HIPKITTENS_BRANCH=opt/rmsnorm-multi-row-pipeline
+RUN git clone --depth 1 -b ${HIPKITTENS_BRANCH} ${HIPKITTENS_REPO} /opt/hipkittens
+
+# Copy standalone benchmark drivers (no pybind11/PyTorch dependency)
+COPY scripts/evaluation/docker/hipkittens/ /opt/hipkittens/bench/
+
+# Common hipcc flags
+# Note: GEMM 1024/2048 use BLOCK_SIZE=128; GEMM 4096/8192 use BLOCK_SIZE=256; GEMM 16384 uses BLOCK_SIZE=256+WGM=8
+# The kernel code itself encodes these differences, so the same compile flags work for all.
+RUN mkdir -p /opt/hipkittens/bin && \
+    cd /opt/hipkittens/bench && \
+    HIPCC_FLAGS="-std=c++20 -DKITTENS_CDNA3 --offload-arch=${GPU_TARGET} -w \
+        -I/opt/hipkittens/include -I/opt/hipkittens/prototype \
+        -I${ROCM_PATH}/include -I${ROCM_PATH}/include/hip \
+        -O2 -gline-tables-only" && \
+    hipcc $HIPCC_FLAGS hipkittens_gemm_1024_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_gemm_1024_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_gemm_2048_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_gemm_2048_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_gemm_4096_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_gemm_4096_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_gemm_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_gemm_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_gemm_16384_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_gemm_16384_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_layernorm_1024_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_layernorm_1024_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_layernorm_2048_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_layernorm_2048_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_layernorm_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_layernorm_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_layernorm_8192_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_layernorm_8192_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_layernorm_16384_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_layernorm_16384_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_rmsnorm_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_rmsnorm_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_rmsnorm_optimized_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_rmsnorm_optimized_bench && \
+    hipcc $HIPCC_FLAGS hipkittens_rmsnorm_pipelined_bench.cpp \
+        -o /opt/hipkittens/bin/hipkittens_rmsnorm_pipelined_bench
+
+ENV PATH="/opt/hipkittens/bin:${PATH}"
+
+# Build all kernel Python extensions for correctness testing
+ENV PYTHONPATH="/opt/hipkittens/src/common/pyutils:${PYTHONPATH}"
+ENV THUNDERKITTENS_ROOT="/opt/hipkittens"
+RUN cd /opt/hipkittens/kernels/rmsnorm && \
+    make GPU_TARGET=CDNA3 && \
+    cd /opt/hipkittens/kernels/layernorm && \
+    make GPU_TARGET=CDNA3 && \
+    cd /opt/hipkittens/kernels/gemm/bf16fp32/mi325x/8192_256_256_64_16 && \
+    make GPU_TARGET=CDNA3
+
+WORKDIR /opt/leo

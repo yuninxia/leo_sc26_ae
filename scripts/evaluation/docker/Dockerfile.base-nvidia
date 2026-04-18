@@ -1,0 +1,93 @@
+# Base infrastructure for NVIDIA GPU evaluation (H100, A100)
+# Contains: system deps, Python 3.11, uv, meson, cmake, Dyninst, Leo
+# HPCToolkit is in a separate layer — see Dockerfile.hpctoolkit-nvidia
+# Build: docker build -f docker/Dockerfile.base-nvidia -t leo-base-nvidia:latest .
+# Workloads are built separately — see Dockerfile.rajaperf-nvidia, Dockerfile.llamacpp-nvidia
+
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GPU_ARCH=90
+
+# ============================================
+# System dependencies
+# ============================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-12 g++-12 \
+    cmake \
+    git \
+    wget \
+    curl \
+    ca-certificates \
+    software-properties-common \
+    python3 \
+    python3-pip \
+    python3-venv \
+    pkg-config \
+    ninja-build \
+    libelf-dev \
+    libdw-dev \
+    libiberty-dev \
+    libbz2-dev \
+    libxerces-c-dev \
+    liblzma-dev \
+    libboost-all-dev \
+    libtbb-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python 3.11 (project requires >=3.11, system has 3.10)
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-dev python3.11-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv (fast Python package manager)
+RUN pip3 install --no-cache-dir uv
+
+# Install meson (HPCToolkit uses meson, not cmake)
+RUN uv tool install meson
+
+# Install newer cmake (workloads like RAJAPerf require >= 3.24)
+RUN uv tool install "cmake>=3.24,<4"
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+# ============================================
+# Dyninst (required by HPCToolkit, build from source)
+# ============================================
+WORKDIR /opt
+RUN git clone --depth 1 https://github.com/dyninst/dyninst.git /opt/dyninst-src && \
+    mkdir -p /opt/dyninst-build && cd /opt/dyninst-build && \
+    cmake /opt/dyninst-src \
+        -DCMAKE_INSTALL_PREFIX=/opt/dyninst \
+        -DCMAKE_BUILD_TYPE=Release \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /opt/dyninst-src /opt/dyninst-build
+
+ENV LD_LIBRARY_PATH="/opt/dyninst/lib:/opt/dyninst/lib64"
+
+# ============================================
+# Leo (analysis tool)
+# ============================================
+COPY . /opt/leo
+WORKDIR /opt/leo
+ENV CC=gcc-12
+ENV CXX=g++-12
+RUN uv sync --python python3.11
+
+# ============================================
+# Smoke test: verify Leo import and analysis
+# ============================================
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/nvidia/hpctoolkit-single.cudaoffload.gcc.cudagpu-measurements \
+    --arch a100 --top-n 1
+
+# ============================================
+# Environment
+# ============================================
+ENV GPU_VENDOR=nvidia
+ENV GPU_ARCH=${GPU_ARCH}
+
+ENTRYPOINT ["/bin/bash"]

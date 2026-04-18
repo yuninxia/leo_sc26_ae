@@ -1,0 +1,60 @@
+# CabanaMD molecular dynamics benchmark for Intel GPUs (Kokkos SYCL backend)
+# Build: docker build -f docker/Dockerfile.cabanamd-intel -t leo-cabanamd-intel:latest .
+# Requires: leo-base-intel:latest (build with docker/Dockerfile.base-intel first)
+# Three-stage build: Kokkos -> Cabana -> CabanaMD
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+# intel-ocloc needed for INTEL_PVC AOT compilation.
+# Intel MPI is already in the base image (do NOT install libopenmpi-dev,
+# it conflicts with Intel MPI's SYCL-aware headers).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    intel-ocloc && rm -rf /var/lib/apt/lists/*
+
+# Stage 1: Build Kokkos with SYCL (pin to 4.5.01, tested with ArborX Intel)
+RUN git clone --depth 1 --branch 4.5.01 https://github.com/kokkos/kokkos.git /opt/kokkos-src
+
+RUN mkdir -p /opt/kokkos-build && cd /opt/kokkos-build && \
+    cmake /opt/kokkos-src \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/kokkos \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_CXX_FLAGS="-g -fsycl" \
+        -DKokkos_ENABLE_SERIAL=ON \
+        -DKokkos_ENABLE_SYCL=ON \
+        -DKokkos_ARCH_INTEL_PVC=ON \
+    && make -j$(nproc) && make install
+
+# Stage 2: Build Cabana with SYCL-enabled Kokkos
+RUN git clone --depth 1 --branch 0.6.1 https://github.com/ECP-copa/Cabana.git /opt/cabana-src
+
+RUN mkdir -p /opt/cabana-build && cd /opt/cabana-build && \
+    cmake /opt/cabana-src \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/cabana \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_CXX_FLAGS="-g -fsycl" \
+        -DCMAKE_PREFIX_PATH=/opt/kokkos \
+        -DCabana_REQUIRE_SYCL=ON \
+    && make -j$(nproc) && make install
+
+# Stage 3: Build CabanaMD
+RUN git clone --depth 1 https://github.com/ECP-copa/CabanaMD.git /opt/cabanamd-src
+
+RUN mkdir -p /opt/cabanamd-build && cd /opt/cabanamd-build && \
+    cmake /opt/cabanamd-src \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/cabanamd \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_CXX_FLAGS="-g -fsycl -D__DPCPP_SYCL_EXTERNAL=" \
+        -DCMAKE_PREFIX_PATH=/opt/cabana \
+        -DCabanaMD_LAYOUT=6 \
+        -DCabanaMD_VECTORLENGTH=32 \
+    && make -j$(nproc) && make install
+
+# Clean input deck for profiling (VTK dump at 99999 to avoid FPE crash, more timesteps)
+RUN printf 'units\t\tlj\natom_style\tatomic\nnewton off\nlattice\t\tfcc 0.8442\nregion\t\tbox block 0 60 0 60 0 60\ncreate_box\t1 box\ncreate_atoms\t1 box\nmass\t\t1 2.0\nvelocity\tall create 1.4 87287 loop geom\npair_style\tlj/cut 2.5\npair_coeff\t1 1 1.0 1.0 2.5\nneighbor\t0.3 bin\nneigh_modify\tevery 20 one 50\ncomm_modify\tcutoff * 20\nfix\t\t1 all nve\nthermo 100\ndump dmpvtk all vtk 99999 dump%%_*.vtu\nrun\t\t500\n' > /opt/cabanamd-src/input/in.lj.bench
+
+ENV PATH="/opt/cabanamd/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,30 @@
+# QMCPACK quantum Monte Carlo benchmark for NVIDIA GPUs
+# Build: docker build -f docker/Dockerfile.qmcpack-nvidia -t leo-qmcpack-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Install QMCPACK dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libhdf5-dev liblapack-dev libblas-dev libfftw3-dev libboost-all-dev libxml2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/QMCPACK/qmcpack.git /opt/qmcpack-src
+
+RUN mkdir -p /opt/qmcpack-build && cd /opt/qmcpack-build && \
+    cmake /opt/qmcpack-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/qmcpack \
+        -DCMAKE_CUDA_FLAGS="-lineinfo" \
+        -DQMC_GPU_ARCHS=sm_${GPU_ARCH} \
+        -DQMC_GPU=cuda \
+        -DQMC_MPI=OFF \
+        -DBUILD_UNIT_TESTS=OFF \
+    && make -j$(nproc) qmcpack \
+    && mkdir -p /opt/qmcpack/bin && cp bin/qmcpack /opt/qmcpack/bin/
+
+ENV PATH="/opt/qmcpack/bin:${PATH}"
+WORKDIR /opt/leo

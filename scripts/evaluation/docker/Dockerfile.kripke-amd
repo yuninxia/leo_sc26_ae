@@ -1,0 +1,30 @@
+# Kripke discrete ordinates transport benchmark for AMD GPUs
+# Build: docker build -f docker/Dockerfile.kripke-amd -t leo-kripke-amd:latest .
+# Requires: leo-hpctoolkit-amd:latest
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+
+# Pin to 01f6f85 (tested March 2026)
+RUN git clone --recursive https://github.com/LLNL/Kripke.git /opt/kripke-src && \
+    cd /opt/kripke-src && git checkout 01f6f85
+
+RUN mkdir -p /opt/kripke-build && cd /opt/kripke-build && \
+    cmake /opt/kripke-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/lib/cmake" \
+        -DENABLE_HIP=On \
+        -DENABLE_CHAI=On \
+        -DENABLE_MPI=Off \
+        -DENABLE_OPENMP=Off \
+        -DCMAKE_HIP_ARCHITECTURES=${GPU_TARGET} \
+        -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer" \
+        -DROCM_PATH=/opt/rocm \
+    && make -j$(nproc) \
+    && mkdir -p /opt/kripke/bin \
+    && (cp kripke.exe /opt/kripke/bin/ 2>/dev/null || find . -name kripke.exe -exec cp {} /opt/kripke/bin/ \;)
+
+ENV PATH="/opt/kripke/bin:${PATH}"
+WORKDIR /opt/leo

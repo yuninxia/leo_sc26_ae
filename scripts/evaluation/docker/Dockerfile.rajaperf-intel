@@ -1,0 +1,36 @@
+# RAJAPerf benchmark workload for Intel GPUs (SYCL backend)
+# Build: docker build -f docker/Dockerfile.rajaperf-intel -t leo-rajaperf-intel:latest .
+# Requires: leo-base-intel:latest (build with docker/Dockerfile.base-intel first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+# Pin to 47aaa7b0 (tested March 2026)
+RUN git clone --recursive https://github.com/LLNL/RAJAPerf.git /opt/RAJAPerf && \
+    cd /opt/RAJAPerf && git checkout 47aaa7b0
+
+# ocloc needed for AOT compilation
+RUN apt-get update && apt-get install -y --no-install-recommends intel-ocloc && rm -rf /var/lib/apt/lists/*
+
+# Build RAJAPerf with SYCL (AOT for PVC)
+RUN mkdir -p /opt/rajaperf-build && cd /opt/rajaperf-build && \
+    cmake /opt/RAJAPerf \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/rajaperf \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_C_COMPILER=icx \
+        -DCMAKE_CXX_FLAGS="-fsycl -fsycl-unnamed-lambda -fsycl-targets=intel_gpu_pvc" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fsycl -fsycl-targets=intel_gpu_pvc" \
+        -DENABLE_SYCL=ON \
+        -DENABLE_CUDA=OFF \
+        -DENABLE_HIP=OFF \
+        -DENABLE_OPENMP=OFF \
+        -DRAJA_ENABLE_SYCL=ON \
+        -DRAJA_ENABLE_DESUL_ATOMICS=ON \
+        -DBLT_CXX_STD=c++17 \
+        -DCMAKE_CXX_STANDARD=17 \
+    && make -j$(nproc) \
+    && make install
+
+ENV PATH="/opt/rajaperf/bin:${PATH}"
+WORKDIR /opt/leo

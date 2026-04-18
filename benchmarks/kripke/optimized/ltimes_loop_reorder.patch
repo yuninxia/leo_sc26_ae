@@ -1,0 +1,18 @@
+--- a/src/Kripke/Arch/LTimes.h
++++ b/src/Kripke/Arch/LTimes.h
+ # Leo-guided optimization: swap Group(thread) and Zone(seq) dimensions
+ # Root cause: LTimes.cpp:62 global_load stall (96.7% NVIDIA, 73.8% AMD)
+ # Leo traces: LTimes.cpp:62 → TypedViewBase.hpp:216 → Operators.hpp:369 → Iterators.hpp:291
+ # Fix: parallelize Zone (coalesced memory access) instead of Group
+
+ ## CUDA (NVIDIA H100)
+-  For<2, cuda_thread_x_loop, // group
+-    For<3, seq_exec, // zone
++  For<3, cuda_thread_x_loop, // Zone (Leo opt: coalesced psi/phi access)
++    For<2, seq_exec, // Group (Leo opt: sequential inner)
+
+ ## HIP (AMD MI300A)
+-  For<2, hip_thread_x_loop, // group
+-    For<3, seq_exec, // zone
++  For<3, hip_thread_x_loop, // Zone (Leo opt: coalesced psi/phi access)
++    For<2, seq_exec, // Group (Leo opt: sequential inner)

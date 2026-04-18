@@ -1,0 +1,36 @@
+# FlashInfer standalone MLA/GQA attention benchmark for NVIDIA H100 (SM90)
+# Build: docker build -f docker/Dockerfile.flashinfer-nvidia -t leo-flashinfer-nvidia:latest .
+# Requires: leo-hpctoolkit-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+#
+# Builds FlashInfer's MLA Hopper kernel as a standalone CUDA C++ benchmark
+# (no Python, no PyTorch, no TVM — pure CUDA).
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Clone FlashInfer with CUTLASS submodule (the only required 3rdparty dep)
+RUN git clone --depth 1 https://github.com/flashinfer-ai/flashinfer.git /opt/flashinfer && \
+    cd /opt/flashinfer && \
+    git submodule update --init --recursive 3rdparty/cutlass
+
+# Copy our standalone benchmark source from the build context
+# (build context is the docker/ directory, so we copy from host at runtime instead)
+# The benchmark files are mounted at /opt/leo-host/benchmarks/flashinfer/
+
+# Build the standalone MLA benchmark
+# We do this at container runtime (not build time) so code changes don't require rebuild.
+# But we can pre-verify the include paths work:
+RUN echo '#include <flashinfer/attention/mla_params.cuh>' > /tmp/test_includes.cu && \
+    echo 'int main() { return 0; }' >> /tmp/test_includes.cu && \
+    nvcc -std=c++17 -I/opt/flashinfer/include -I/opt/flashinfer/3rdparty/cutlass/include \
+         -gencode arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH} \
+         --expt-relaxed-constexpr \
+         /tmp/test_includes.cu -o /tmp/test_includes 2>&1 && \
+    rm -f /tmp/test_includes /tmp/test_includes.cu && \
+    echo "FlashInfer includes verified OK"
+
+ENV FLASHINFER_DIR=/opt/flashinfer
+ENV CUTLASS_DIR=/opt/flashinfer/3rdparty/cutlass
+WORKDIR /opt/leo

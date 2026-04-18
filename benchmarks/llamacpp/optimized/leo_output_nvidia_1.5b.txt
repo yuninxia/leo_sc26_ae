@@ -1,0 +1,269 @@
+   Building leo @ file:///opt/leo
+      Built leo @ file:///opt/leo
+Uninstalled 1 package in 2ms
+Installed 1 package in 1ms
+Mode:       Whole-Program Analysis
+Sort by:    stall_cycles
+Top N:      5
+Arch:       h100
+
+Stall breakdown unavailable for PC 0x80a160, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x81b6b0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x821d00, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x822e00, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x820000, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 621 / 3753 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x80a160, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x81b6b0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x821d00, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x822e00, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x820000, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 621 / 3753 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x6f7800, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6e8f80, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6ee980, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x700500, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6fd120, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 984 / 8250 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x6f7800, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6e8f80, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6ee980, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x700500, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x6fd120, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 984 / 8250 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x5e3f0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x5e3f0, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x5e3f0, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 3 / 99 edges, used total_stall fallback (conservative pruning)
+====================================================================================================
+                             Leo Whole-Program GPU Performance Analysis                             
+====================================================================================================
+
+Database: /workspace/hpctoolkit-llama-bench-database
+Measurements: /workspace/hpctoolkit-llama-bench-measurements
+
+PROGRAM TOTALS
+----------------------------------------------------------------------------------------------------
+  Total Execution Time: 0.1690s
+  Total Stall Cycles:  9,911,140,352
+  Total GPU Cycles:    31,186,747,392
+  Overall Stall Ratio: 31.8%
+  Kernels Analyzed:    5
+  Kernels Skipped:     0
+
+TOP 5 KERNELS BY STALL CYCLES
+----------------------------------------------------------------------------------------------------
+#  Kernel                                      Time (s)      Stall Cycles   Stall %       Sample Rate
+----------------------------------------------------------------------------------------------------
+1  _Z24mul_mat_q_stream_k_fixupIL9ggml_t...      0.0025       941,621,248     32.7%         1133.0G/s
+2  _Z24mul_mat_q_stream_k_fixupIL9ggml_t...      0.0131       941,621,248     32.7%          220.2G/s
+3  _Z24mul_mat_q_stream_k_fixupIL9ggml_t...      0.0113       617,611,264     28.3%          193.4G/s
+4  _Z24mul_mat_q_stream_k_fixupIL9ggml_t...      0.0627       617,611,264     28.3%           34.9G/s
+5  _Z17leaky_relu_kernelIfEvPKT_PS0_if           0.0055       557,842,432     37.0%          276.0G/s
+----------------------------------------------------------------------------------------------------
+
+KERNEL #1: _Z24mul_mat_q_stream_k_fixupIL9ggml_type14ELi12...
+  GPU Binary: f84f336be3b1637c28ce0ca60b4994cc.gpubin
+============================================================================================================
+                                        Leo GPU Performance Analysis                                        
+============================================================================================================
+WARNING: Very low profile coverage: 1567/179528 (0.9%)
+Kernel: void mul_mat_q_stream_k_fixup<(ggml_type)14, 128, true>(int const*, int const*, float*, float const*, int, int, int, unsigned long, int, unsigned long, int, unsigned long, int) Architecture: NVIDIA H100
+Total Stall Cycles: 975,490,253
+============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+------------------------------------------------------------------------------------------------------------
+Stall Location Stall Opcode          Root Cause Location Root Opcode                  Cycles % Total Speedup
+------------------------------------------------------------------------------------------------------------
+mmq.cuh:3771   FADD.FTZ         <-- mmq.cuh:3771        FADD.FTZ                 35,651,584    3.7%   1.01x
+mmq.cuh:2600   I2FP.F32.S32     <-- mmq.cuh:2600        IMAD                     22,020,096    2.3%   1.01x
+mmq.cuh:3819   FADD.FTZ         <-- mmq.cuh:3819        LDG.E                    20,971,520    2.1%   1.01x
+mmq.cuh:2600   FFMA.FTZ         <-- mmq.cuh:2600        I2FP.F32.S32             18,874,368    1.9%   1.01x
+mma.cuh:859    IMMA.16816.S8.S8 <-- mma.cuh:779         LDSM.16.M88.2            16,777,216    1.7%   1.01x
+mmq.cuh:2600   IMAD             <-- mma.cuh:859         IMMA.16816.S8.S8         14,680,064    1.5%   1.00x
+vecdotq.cuh:22 PRMT             <-- vecdotq.cuh:22      PRMT                     13,631,488    1.4%   1.00x
+mma.cuh:752    LDS              <-- mma.cuh:752         LDS                      10,485,760    1.1%   1.00x
+mmq.cuh:3426   STS              <-- mmq.cuh:3426        STS                       9,437,184    1.0%   1.00x
+mmq.cuh:2328   LOP3.LUT         <-- mmq.cuh:2327        LOP3.LUT                  9,437,184    1.0%   1.00x
+------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+------------------------------------------------------------------------------------------------------------
+  STS @ mmq.cuh:3426 ← LDG.E.CONSTANT @ mmq.cuh:3426 ← LEA @ mmq.cuh:3426   4,194,304
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   3,145,728
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   3,145,728
+  LDS.128 @ mmq.cuh:2554 ← STS @ mmq.cuh:2328 ← PRMT @ vecdotq.cuh:22   3,145,727
+  LOP3.LUT @ mmq.cuh:2320 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327   3,145,713
+  LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2320 ← PRMT @ vecdotq.cuh:22   2,995,931
+  LOP3.LUT @ mmq.cuh:2328 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327   2,097,152
+  LDG.E.U16.CONSTANT @ vecdotq.cuh:22 ← IMAD.WIDE @ vecdotq.cuh:21 ← IMAD.WIDE @ vecdotq.cuh:21   2,097,152
+  I2FP.F32.S32 @ mmq.cuh:2600 ← IMAD @ mmq.cuh:2600 ← IMAD @ mmq.cuh:2600   2,097,152
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   2,097,152
+------------------------------------------------------------------------------------------------------------
+============================================================================================================
+
+KERNEL #2: _Z24mul_mat_q_stream_k_fixupIL9ggml_type14ELi12...
+  GPU Binary: f84f336be3b1637c28ce0ca60b4994cc.gpubin
+============================================================================================================
+                                        Leo GPU Performance Analysis                                        
+============================================================================================================
+WARNING: Very low profile coverage: 1567/179528 (0.9%)
+Kernel: void mul_mat_q_stream_k_fixup<(ggml_type)14, 128, true>(int const*, int const*, float*, float const*, int, int, int, unsigned long, int, unsigned long, int, unsigned long, int) Architecture: NVIDIA H100
+Total Stall Cycles: 975,490,253
+============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+------------------------------------------------------------------------------------------------------------
+Stall Location Stall Opcode          Root Cause Location Root Opcode                  Cycles % Total Speedup
+------------------------------------------------------------------------------------------------------------
+mmq.cuh:3771   FADD.FTZ         <-- mmq.cuh:3771        FADD.FTZ                 35,651,584    3.7%   1.01x
+mmq.cuh:2600   I2FP.F32.S32     <-- mmq.cuh:2600        IMAD                     22,020,096    2.3%   1.01x
+mmq.cuh:3819   FADD.FTZ         <-- mmq.cuh:3819        LDG.E                    20,971,520    2.1%   1.01x
+mmq.cuh:2600   FFMA.FTZ         <-- mmq.cuh:2600        I2FP.F32.S32             18,874,368    1.9%   1.01x
+mma.cuh:859    IMMA.16816.S8.S8 <-- mma.cuh:779         LDSM.16.M88.2            16,777,216    1.7%   1.01x
+mmq.cuh:2600   IMAD             <-- mma.cuh:859         IMMA.16816.S8.S8         14,680,064    1.5%   1.00x
+vecdotq.cuh:22 PRMT             <-- vecdotq.cuh:22      PRMT                     13,631,488    1.4%   1.00x
+mma.cuh:752    LDS              <-- mma.cuh:752         LDS                      10,485,760    1.1%   1.00x
+mmq.cuh:3426   STS              <-- mmq.cuh:3426        STS                       9,437,184    1.0%   1.00x
+mmq.cuh:2328   LOP3.LUT         <-- mmq.cuh:2327        LOP3.LUT                  9,437,184    1.0%   1.00x
+------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+------------------------------------------------------------------------------------------------------------
+  STS @ mmq.cuh:3426 ← LDG.E.CONSTANT @ mmq.cuh:3426 ← LEA @ mmq.cuh:3426   4,194,304
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   3,145,728
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   3,145,728
+  LDS.128 @ mmq.cuh:2554 ← STS @ mmq.cuh:2328 ← PRMT @ vecdotq.cuh:22   3,145,727
+  LOP3.LUT @ mmq.cuh:2320 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327   3,145,713
+  LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2320 ← PRMT @ vecdotq.cuh:22   2,995,931
+  LOP3.LUT @ mmq.cuh:2328 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327 ← LOP3.LUT @ mmq.cuh:2327   2,097,152
+  LDG.E.U16.CONSTANT @ vecdotq.cuh:22 ← IMAD.WIDE @ vecdotq.cuh:21 ← IMAD.WIDE @ vecdotq.cuh:21   2,097,152
+  I2FP.F32.S32 @ mmq.cuh:2600 ← IMAD @ mmq.cuh:2600 ← IMAD @ mmq.cuh:2600   2,097,152
+  IMAD @ mmq.cuh:2600 ← IMMA.16816.S8.S8 @ mma.cuh:859 ← LDSM.16.M88.2 @ mma.cuh:779   2,097,152
+------------------------------------------------------------------------------------------------------------
+============================================================================================================
+
+KERNEL #3: _Z24mul_mat_q_stream_k_fixupIL9ggml_type12ELi12...
+  GPU Binary: 70119b7fe738aba5daf83be354275fbf.gpubin
+=============================================================================================================
+                                         Leo GPU Performance Analysis                                        
+=============================================================================================================
+WARNING: Very low profile coverage: 4116/158136 (2.6%)
+Kernel: void mul_mat_q_stream_k_fixup<(ggml_type)12, 128, true>(int const*, int const*, float*, float const*, int, int, int, unsigned long, int, unsigned long, int, unsigned long, int) Architecture: NVIDIA H100
+Total Stall Cycles: 2,758,174,310
+=============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-------------------------------------------------------------------------------------------------------------
+Stall Location    Stall Opcode          Root Cause Location Root Opcode                Cycles % Total Speedup
+-------------------------------------------------------------------------------------------------------------
+mmq.cuh:3819      FADD.FTZ         <-- mmq.cuh:3819        LDG.E                  72,351,744    2.6%   1.01x
+mmq.cuh:1223      FMUL.FTZ         <-- cuda_fp16.hpp:980   HADD2.F32              66,060,288    2.4%   1.01x
+mmq.cuh:2016      SHF.R.U32.HI     <-- vecdotq.cuh:28      LDG.E.CONSTANT         53,477,376    1.9%   1.01x
+mma.cuh:881       IMMA.16832.S8.S8 <-- mma.cuh:798         LDSM.16.M88.4          49,283,072    1.8%   1.00x
+mmq.cuh:3771      FADD.FTZ         <-- mmq.cuh:3771        FADD.FTZ               34,603,008    1.3%   1.00x
+mmq.cuh:1223      I2FP.F32.S32     <-- mmq.cuh:1223        FMUL.FTZ               30,408,704    1.1%   1.00x
+cuda_fp16.hpp:980 HADD2.F32        <-- cuda_fp16.hpp:980   HADD2.F32              27,262,976    1.0%   1.00x
+mmq.cuh:1223      I2FP.F32.S32     <-- mmq.cuh:1223        I2FP.F32.S32           26,214,400    1.0%   1.00x
+mmq.cuh:3692      LDC              <-- mmq.cuh:3692        LDC                    25,165,824    0.9%   1.00x
+mmq.cuh:3771      FADD.FTZ         <-- mmq.cuh:3771        LDG.E.CONSTANT         24,117,248    0.9%   1.00x
+-------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-------------------------------------------------------------------------------------------------------------
+  FADD.FTZ @ mmq.cuh:3819 ← LDG.E @ mmq.cuh:3819 ← IADD3 @ mmq.cuh:3819  38,797,312
+  FADD.FTZ @ mmq.cuh:3819 ← LDG.E @ mmq.cuh:3819 ← LEA @ mmq.cuh:3819  25,165,824
+  FADD.FTZ @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771  14,680,064
+  IMAD.HI.U32 @ mmq.cuh:3650 ← IMAD.HI.U32 @ mmq.cuh:3650 ← F2I.FTZ.U32.TRUNC.NTZ @ mmq.cuh:3650 ← IADD3 @ mmq.cuh:3650 ← LDS @ mmq.cuh:3195  13,631,488
+  FADD.FTZ @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LEA @ mmq.cuh:3771   9,437,184
+  I2FP.F32.S32 @ mmq.cuh:1223 ← FMUL.FTZ @ mmq.cuh:1223 ← HADD2.F32 @ cuda_fp16.hpp:980 ← LDS.128 @ cuda_fp16.h:5040 ← LDS @ mmq.cuh:3195   9,437,184
+  IMAD @ mmq.cuh:3195 ← IADD3 @ mmq.cuh:3570 ← LOP3.LUT @ mmq.cuh:3570 ← ULDC.64 @ mmq.cuh:3569   7,340,032
+  FMUL.FTZ @ mmq.cuh:1223 ← HADD2.F32 @ cuda_fp16.hpp:980 ← LDS.128 @ cuda_fp16.h:5040 ← LDS @ mmq.cuh:3195   7,340,032
+  I2FP.F32.S32 @ mmq.cuh:1223 ← FFMA.FTZ @ mmq.cuh:1224 ← HADD2.F32 @ cuda_fp16.hpp:980   7,340,032
+  LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752   7,340,032
+-------------------------------------------------------------------------------------------------------------
+=============================================================================================================
+
+KERNEL #4: _Z24mul_mat_q_stream_k_fixupIL9ggml_type12ELi12...
+  GPU Binary: 70119b7fe738aba5daf83be354275fbf.gpubin
+=============================================================================================================
+                                         Leo GPU Performance Analysis                                        
+=============================================================================================================
+WARNING: Very low profile coverage: 4116/158136 (2.6%)
+Kernel: void mul_mat_q_stream_k_fixup<(ggml_type)12, 128, true>(int const*, int const*, float*, float const*, int, int, int, unsigned long, int, unsigned long, int, unsigned long, int) Architecture: NVIDIA H100
+Total Stall Cycles: 2,758,174,310
+=============================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-------------------------------------------------------------------------------------------------------------
+Stall Location    Stall Opcode          Root Cause Location Root Opcode                Cycles % Total Speedup
+-------------------------------------------------------------------------------------------------------------
+mmq.cuh:3819      FADD.FTZ         <-- mmq.cuh:3819        LDG.E                  72,351,744    2.6%   1.01x
+mmq.cuh:1223      FMUL.FTZ         <-- cuda_fp16.hpp:980   HADD2.F32              66,060,288    2.4%   1.01x
+mmq.cuh:2016      SHF.R.U32.HI     <-- vecdotq.cuh:28      LDG.E.CONSTANT         53,477,376    1.9%   1.01x
+mma.cuh:881       IMMA.16832.S8.S8 <-- mma.cuh:798         LDSM.16.M88.4          49,283,072    1.8%   1.00x
+mmq.cuh:3771      FADD.FTZ         <-- mmq.cuh:3771        FADD.FTZ               34,603,008    1.3%   1.00x
+mmq.cuh:1223      I2FP.F32.S32     <-- mmq.cuh:1223        FMUL.FTZ               30,408,704    1.1%   1.00x
+cuda_fp16.hpp:980 HADD2.F32        <-- cuda_fp16.hpp:980   HADD2.F32              27,262,976    1.0%   1.00x
+mmq.cuh:1223      I2FP.F32.S32     <-- mmq.cuh:1223        I2FP.F32.S32           26,214,400    1.0%   1.00x
+mmq.cuh:3692      LDC              <-- mmq.cuh:3692        LDC                    25,165,824    0.9%   1.00x
+mmq.cuh:3771      FADD.FTZ         <-- mmq.cuh:3771        LDG.E.CONSTANT         24,117,248    0.9%   1.00x
+-------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-------------------------------------------------------------------------------------------------------------
+  FADD.FTZ @ mmq.cuh:3819 ← LDG.E @ mmq.cuh:3819 ← IADD3 @ mmq.cuh:3819  38,797,312
+  FADD.FTZ @ mmq.cuh:3819 ← LDG.E @ mmq.cuh:3819 ← LEA @ mmq.cuh:3819  25,165,824
+  FADD.FTZ @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771  14,680,064
+  IMAD.HI.U32 @ mmq.cuh:3650 ← IMAD.HI.U32 @ mmq.cuh:3650 ← F2I.FTZ.U32.TRUNC.NTZ @ mmq.cuh:3650 ← IADD3 @ mmq.cuh:3650 ← LDS @ mmq.cuh:3195  13,631,488
+  FADD.FTZ @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LDG.E.CONSTANT @ mmq.cuh:3771 ← LEA @ mmq.cuh:3771   9,437,184
+  I2FP.F32.S32 @ mmq.cuh:1223 ← FMUL.FTZ @ mmq.cuh:1223 ← HADD2.F32 @ cuda_fp16.hpp:980 ← LDS.128 @ cuda_fp16.h:5040 ← LDS @ mmq.cuh:3195   9,437,184
+  IMAD @ mmq.cuh:3195 ← IADD3 @ mmq.cuh:3570 ← LOP3.LUT @ mmq.cuh:3570 ← ULDC.64 @ mmq.cuh:3569   7,340,032
+  FMUL.FTZ @ mmq.cuh:1223 ← HADD2.F32 @ cuda_fp16.hpp:980 ← LDS.128 @ cuda_fp16.h:5040 ← LDS @ mmq.cuh:3195   7,340,032
+  I2FP.F32.S32 @ mmq.cuh:1223 ← FFMA.FTZ @ mmq.cuh:1224 ← HADD2.F32 @ cuda_fp16.hpp:980   7,340,032
+  LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752 ← LDS @ mma.cuh:752   7,340,032
+-------------------------------------------------------------------------------------------------------------
+=============================================================================================================
+
+KERNEL #5: _Z17leaky_relu_kernelIfEvPKT_PS0_if
+  GPU Binary: 476fb80a2f711948dcf0a89feb8a6d09.gpubin
+===========================================================================================================
+                                        Leo GPU Performance Analysis                                       
+===========================================================================================================
+WARNING: Very low profile coverage: 58/4376 (1.3%)
+Kernel: void leaky_relu_kernel<float>(float const*, float*, int, float) Architecture: NVIDIA H100
+Total Stall Cycles: 101,711,872
+===========================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-----------------------------------------------------------------------------------------------------------
+Stall Location Stall Opcode         Root Cause Location Root Opcode                  Cycles % Total Speedup
+-----------------------------------------------------------------------------------------------------------
+unary.cuh:93   FMUL.FTZ        <-- unary.cu:266        LDG.E                    56,623,104   55.7%   1.22x
+unary.cu:266   FMUL.FTZ        <-- unary.cu:266        LDG.E                    12,722,722   12.5%   1.04x
+unary.cu:263   ULDC.64         <-- unary.cu:263        ULDC.64                   3,145,728    3.1%   1.01x
+unary.cuh:93   MUFU.RCP        <-- unary.cuh:93        FADD.FTZ                  3,145,728    3.1%   1.01x
+unary.cuh:93   MUFU.EX2        <-- unary.cuh:93        MUFU.EX2                  2,097,152    2.1%   1.01x
+unary.cu:258   ISETP.GE.AND.EX <-- unary.cu:258        ISETP.GE.U32.AND          2,097,152    2.1%   1.01x
+unary.cu:266   LDG.E           <-- unary.cu:266        LEA                       2,097,152    2.1%   1.01x
+unary.cu:258   ULDC            <-- unary.cu:258        ULDC                      2,097,152    2.1%   1.01x
+unary.cu:266   FMUL.FTZ        <-- unary.cuh:93        FMUL.FTZ                  1,957,342    1.9%   1.01x
+unary.cu:258   VIADD           <-- unary.cu:258        MUFU.RCP                  1,310,720    1.3%   1.00x
+-----------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-----------------------------------------------------------------------------------------------------------
+  FMUL.FTZ @ unary.cuh:93 ← LDG.E @ unary.cu:266 ← LEA @ unary.cu:266 ← IMAD.WIDE.U32 @ unary.cu:263  56,623,104
+  FMUL.FTZ @ unary.cu:266 ← LDG.E @ unary.cu:266 ← LEA @ unary.cu:266 ← SEL @ unary.cu:264 ← IMAD.WIDE.U32 @ unary.cu:264 ← LOP3.LUT @ unary.cu:258  12,722,722
+  MUFU.RCP @ unary.cuh:93 ← FADD.FTZ @ unary.cuh:93 ← MUFU.EX2 @ unary.cuh:93   3,145,728
+  VIADD @ unary.cu:258 ← MUFU.RCP @ unary.cu:258 ← I2F.U32.RP @ unary.cu:258   1,310,720
+  LDG.E @ unary.cu:266 ← LEA @ unary.cu:266 ← SEL @ unary.cu:264 ← IMAD.WIDE.U32 @ unary.cu:264 ← LOP3.LUT @ unary.cu:258   1,048,576
+  LDG.E @ unary.cu:266 ← LEA @ unary.cu:266 ← IMAD.WIDE.U32 @ unary.cu:263   1,048,576
+  LEA @ unary.cu:266 ← SEL @ unary.cu:264 ← IMAD.WIDE.U32 @ unary.cu:264 ← LOP3.LUT @ unary.cu:258   1,048,576
+  F2I.FTZ.U32.TRUNC.NTZ @ unary.cu:258 ← VIADD @ unary.cu:258 ← ULDC @ unary.cu:258   1,048,576
+  BRA @ unary.cu:258 ← ISETP.NE.U32.AND @ unary.cu:258 ← LOP3.LUT @ unary.cu:258   1,048,576
+  EXIT @ unary.cu:258 ← ISETP.GE.AND.EX @ unary.cu:258 ← ISETP.GE.U32.AND @ unary.cu:258   1,048,576
+-----------------------------------------------------------------------------------------------------------
+===========================================================================================================
+====================================================================================================

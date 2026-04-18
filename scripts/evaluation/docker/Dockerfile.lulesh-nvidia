@@ -1,0 +1,30 @@
+# LULESH 2.0 OpenMP offload for NVIDIA GPUs (H100, A100)
+# Build: docker build -f docker/Dockerfile.lulesh-nvidia -t leo-lulesh-nvidia:latest .
+# Requires: leo-nvhpc-nvidia:latest (shared NVHPC compiler layer)
+
+ARG BASE_TAG=latest
+ARG GPU_ARCH=90
+
+FROM leo-nvhpc-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Clone LULESH 2.0.2 (contains omp_4.0 OpenMP offload variant)
+RUN git clone --depth 1 --branch 2.0.2 https://github.com/LLNL/LULESH.git /opt/lulesh-src/LULESH
+
+# Patch Makefile: the link rule has hardcoded NVIDIA flags; replace with generic $(CXX) $(CXXFLAGS)
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    sed -i 's|$(CXX) -fopenmp=libomp.*-o $@|$(CXX) $(CXXFLAGS) $(OBJECTS2.0) $(LDFLAGS) -lstdc++ -lm -o $@|' Makefile && \
+    sed -i 's|-L/usr/local/cuda/nvvm/libdevice||' Makefile
+
+# Build with nvc++ OpenMP offload to NVIDIA GPU
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    make CXX="nvc++" \
+         CXXFLAGS="-DUSE_MPI=0 -fast -gopt -mp=gpu -gpu=cc${GPU_ARCH}" \
+         LDFLAGS="" \
+         OMPFLAGS="" && \
+    mkdir -p /opt/lulesh/bin && \
+    cp lulesh2.0 /opt/lulesh/bin/
+
+ENV PATH="/opt/lulesh/bin:${PATH}"
+WORKDIR /opt/leo

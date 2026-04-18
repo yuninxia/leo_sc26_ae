@@ -1,0 +1,75 @@
+# AMR-Wind incompressible CFD solver for Intel GPUs (AMReX SYCL backend)
+# Build: docker build -f docker/Dockerfile.amrwind-intel -t leo-amrwind-intel:latest .
+# Requires: leo-base-intel:latest (build with docker/Dockerfile.base-intel first)
+# Single-stage build: AMReX is included as a git submodule
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+RUN git clone --depth 1 --recursive https://github.com/Exawind/amr-wind.git /opt/amr-wind-src
+
+RUN mkdir -p /opt/amr-wind-build && cd /opt/amr-wind-build && \
+    cmake /opt/amr-wind-src \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/amr-wind \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_C_COMPILER=icx \
+        -DCMAKE_CXX_FLAGS="-g" \
+        -DAMR_WIND_ENABLE_SYCL=ON \
+        -DAMR_WIND_ENABLE_MPI=OFF \
+        -DAMR_WIND_ENABLE_NETCDF=OFF \
+        -DAMReX_SYCL_SPLIT_KERNEL=OFF \
+    && make -j$(nproc) && make install
+
+# Create a small ABL benchmark input for profiling
+# Note: heredocs don't work with legacy Docker builder (DOCKER_BUILDKIT=0), use printf
+RUN mkdir -p /opt/amr-wind-benchmarks && \
+    printf '%s\n' \
+        'time.stop_time = -1' \
+        'time.max_step = 10' \
+        'time.fixed_dt = 0.5' \
+        'time.cfl = 0.95' \
+        'time.plot_interval = -1' \
+        'time.checkpoint_interval = -1' \
+        'io.outputs = density velocity' \
+        'incflo.gravity = 0. 0. -9.81' \
+        'incflo.density = 1.0' \
+        'incflo.velocity = 6.128355544951824 5.142300877492314 0.0' \
+        'incflo.use_godunov = 1' \
+        'incflo.diffusion_type = 1' \
+        'transport.viscosity = 1.0e-5' \
+        'transport.laminar_prandtl = 0.7' \
+        'transport.turbulent_prandtl = 0.3333' \
+        'transport.reference_temperature = 300.0' \
+        'turbulence.model = Smagorinsky' \
+        'Smagorinsky_coeffs.Cs = 0.135' \
+        'incflo.physics = ABL' \
+        'ICNS.source_terms = BoussinesqBuoyancy CoriolisForcing ABLForcing' \
+        'CoriolisForcing.latitude = 41.3' \
+        'ABLForcing.abl_forcing_height = 90' \
+        'ABL.temperature_heights = 0.0 650.0 750.0 1000.0' \
+        'ABL.temperature_values = 300.0 300.0 308.0 308.75' \
+        'ABL.perturb_temperature = true' \
+        'ABL.cutoff_height = 800.0' \
+        'ABL.perturb_velocity = true' \
+        'ABL.perturb_ref_height = 50.0' \
+        'ABL.Uperiods = 4.0' \
+        'ABL.Vperiods = 4.0' \
+        'ABL.deltaU = 1.0' \
+        'ABL.deltaV = 1.0' \
+        'ABL.kappa = .41' \
+        'ABL.surface_roughness_z0 = 0.15' \
+        'ABL.reference_temperature = 300.0' \
+        'geometry.prob_lo = 0.0 0.0 0.0' \
+        'geometry.prob_hi = 1000.0 1000.0 1000.0' \
+        'amr.n_cell = 128 128 128' \
+        'geometry.is_periodic = 1 1 0' \
+        'amr.max_level = 0' \
+        'zlo.type = wall_model' \
+        'zhi.type = slip_wall' \
+        'zhi.temperature_type = fixed_gradient' \
+        'zhi.temperature = 0.003' \
+        > /opt/amr-wind-benchmarks/inputs.abl
+
+ENV PATH="/opt/amr-wind/bin:${PATH}"
+WORKDIR /opt/leo

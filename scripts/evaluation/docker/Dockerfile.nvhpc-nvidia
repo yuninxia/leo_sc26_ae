@@ -1,0 +1,39 @@
+# NVHPC compiler layer for NVIDIA OpenMP offload workloads
+# Provides nvc++ on top of the HPCToolkit image so that workload layers
+# (lulesh, minitest, …) only need to clone source and compile.
+#
+# Build: docker build -f docker/Dockerfile.nvhpc-nvidia -t leo-nvhpc-nvidia:latest .
+# Requires: leo-hpctoolkit-nvidia:latest
+#
+# Multi-stage: Stage 1 references the NVHPC image; Stage 2 copies the
+# compiler toolchain and runtime libraries into the HPCToolkit image.
+
+ARG BASE_TAG=latest
+
+# Stage 1: NVHPC SDK source (only used for COPY --from)
+FROM nvcr.io/nvidia/nvhpc:24.11-devel-cuda_multi-ubuntu22.04 AS nvhpc-source
+
+# Stage 2: Detect SDK platform path (x86_64 vs aarch64)
+FROM nvhpc-source AS nvhpc-detect
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then PLAT="Linux_aarch64"; else PLAT="Linux_x86_64"; fi && \
+    ln -s /opt/nvidia/hpc_sdk/${PLAT}/24.11 /opt/nvhpc-resolved
+
+# Stage 3: HPCToolkit image + NVHPC compiler
+ARG BASE_TAG
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+# Copy NVHPC compilers (nvc++, nvc, nvfortran, libs, includes)
+COPY --from=nvhpc-detect /opt/nvhpc-resolved/compilers/ /opt/nvhpc/compilers/
+
+# Copy NVHPC-bundled CUDA (nvc++ references its own CUDA, not the system one)
+COPY --from=nvhpc-detect /opt/nvhpc-resolved/cuda/ /opt/nvhpc/cuda/
+
+# Set NVHPC environment so nvc++ is on PATH and finds its runtime libs
+ENV NVHPC=/opt/nvhpc
+ENV PATH="/opt/nvhpc/compilers/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/nvhpc/compilers/lib:${LD_LIBRARY_PATH}"
+# nvc++ needs NVHPC_CUDA_HOME to locate GPU offload runtime
+ENV NVHPC_CUDA_HOME="/opt/nvhpc/cuda"
+
+WORKDIR /opt/leo

@@ -1,0 +1,27 @@
+--- a/ggml/src/ggml-cuda/mmq.cuh
++++ b/ggml/src/ggml-cuda/mmq.cuh
+@@ -3144,7 +3147,8 @@
+                 continue;
+             }
+
+-            dst[ids_dst[j]*stride + i] = sum[(j0/nwarps) * (mmq_y/warp_size) + i0/warp_size];
++            // Leo optimization: direct store avoids LDS read + multiply for ids_dst
++            dst[j*stride + i] = sum[(j0/nwarps) * (mmq_y/warp_size) + i0/warp_size];
+         }
+     }
+ }
+@@ -3192,7 +3196,8 @@
+                 continue;
+             }
+
+-            dst[ids_dst[j]*stride + i] = sum[(j0/tile_C::J + n)*tile_C::ne + l];
++            // Leo optimization: direct store avoids LDS read + multiply for ids_dst
++            dst[j*stride + i] = sum[(j0/tile_C::J + n)*tile_C::ne + l];
+         }
+     }
+ }
+
+Note: NVIDIA keeps mmq_x=128 (tensor cores work well with large tiles).
+The __restrict__ qualifier is added to tmp_last_tile in stream-k fixup:
+-    const float * tmp_last_tile
++    const float * __restrict__ tmp_last_tile

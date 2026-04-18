@@ -1,0 +1,136 @@
+# Universal analysis image with all three GPU disassemblers
+# Contains: nvdisasm (NVIDIA), llvm-objdump (AMD), libged.so (Intel), + Leo
+# No GPU hardware required — runs on any x86-64 machine for offline analysis
+#
+# Build: docker build -f docker/Dockerfile.base-universal -t leo-base-universal:latest .
+#
+# Usage: analyze GPU binaries from any vendor:
+#   docker run --rm -v /path/to/measurements:/data leo-base-universal:latest \
+#       uv run python scripts/analyze_benchmark.py /data --arch nvidia --top-n 5
+
+# =============================================================================
+# Stage 1: Extract nvdisasm from NVIDIA CUDA toolkit
+# =============================================================================
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04 AS nvidia-tools
+
+# =============================================================================
+# Stage 2: Extract llvm-objdump from AMD ROCm toolkit
+# =============================================================================
+FROM rocm/dev-ubuntu-22.04:7.0 AS amd-tools
+
+# =============================================================================
+# Stage 3: Download Intel GTPin for GED disassembler library
+# =============================================================================
+FROM ubuntu:22.04 AS intel-tools
+RUN apt-get update && apt-get install -y --no-install-recommends wget xz-utils ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+# GTPin 4.5.0 — same version HPCToolkit uses (from its meson wrap)
+RUN wget -q https://downloadmirror.intel.com/856505/external-release-gtpin-4.5.0-linux.tar.xz \
+    && mkdir -p /opt/gtpin \
+    && tar xf external-release-gtpin-4.5.0-linux.tar.xz -C /opt/gtpin \
+    && rm external-release-gtpin-4.5.0-linux.tar.xz
+
+# =============================================================================
+# Stage 4: Final image with all disassemblers + Leo
+# =============================================================================
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# System dependencies (minimal for Leo + disassemblers)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-12 g++-12 \
+    git \
+    ca-certificates \
+    software-properties-common \
+    python3 \
+    python3-pip \
+    python3-venv \
+    pkg-config \
+    libelf-dev \
+    libdw-dev \
+    libiberty-dev \
+    zlib1g \
+    libzstd1 \
+    gnupg \
+    dirmngr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 3.11 (project requires >=3.11)
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-dev python3.11-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv (fast Python package manager)
+RUN pip3 install --no-cache-dir uv
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+# ============================================
+# Copy disassemblers from build stages
+# ============================================
+
+# NVIDIA: nvdisasm
+COPY --from=nvidia-tools /usr/local/cuda/bin/nvdisasm /usr/local/bin/nvdisasm
+
+# AMD: llvm-objdump
+COPY --from=amd-tools /opt/rocm/llvm/bin/llvm-objdump /usr/local/bin/llvm-objdump
+
+# Intel: GED library (libged.so from GTPin 4.5.0)
+COPY --from=intel-tools /opt/gtpin/Profilers/Lib/intel64/libged.so /opt/gtpin/libged.so
+
+# ============================================
+# Leo (analysis tool)
+# ============================================
+COPY . /opt/leo
+WORKDIR /opt/leo
+ENV CC=gcc-12
+ENV CXX=g++-12
+RUN uv sync --python python3.11 \
+    --no-install-package cudf-cu13 \
+    --no-install-package pylibcudf-cu13 \
+    --no-install-package libcudf-cu13 \
+    --no-install-package libcudf-cu13-internal \
+    --no-install-package cupy-cuda13x \
+    --no-install-package rmm-cu13 \
+    --no-install-package librmm-cu13 \
+    --no-install-package libkvikio-cu13 \
+    --no-install-package cuda-bindings \
+    --no-install-package cuda-core \
+    --no-install-package cuda-pathfinder \
+    --no-install-package cuda-python \
+    --no-install-package cuda-toolkit \
+    --no-install-package numba-cuda \
+    --no-install-package nvidia-cuda-cccl \
+    --no-install-package nvidia-cuda-crt \
+    --no-install-package nvidia-cuda-nvcc \
+    --no-install-package nvidia-cuda-nvrtc \
+    --no-install-package nvidia-cuda-runtime
+
+# ============================================
+# Environment
+# ============================================
+ENV GED_LIBRARY_PATH="/opt/gtpin/libged.so"
+ENV LD_LIBRARY_PATH="/opt/gtpin:${LD_LIBRARY_PATH}"
+
+# ============================================
+# Smoke tests: verify all disassemblers + Leo
+# ============================================
+RUN nvdisasm --version
+RUN llvm-objdump --version
+RUN uv run python -c "from leo.binary.disasm import get_disassembler; d = get_disassembler('intel'); assert d.check_available(), 'GED not found'"
+
+# Verify Leo analysis works for all three vendors
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/nvidia/hpctoolkit-single.cudaoffload.gcc.cudagpu-measurements \
+    --arch nvidia --top-n 1
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/amd/hpctoolkit-single.hipoffload.amdclang.rocmgpu-measurements \
+    --arch amd --top-n 1
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/intel/hpctoolkit-single.sycloffload.icpx.intelgpu-measurements \
+    --arch intel --top-n 1
+
+ENTRYPOINT ["/bin/bash"]

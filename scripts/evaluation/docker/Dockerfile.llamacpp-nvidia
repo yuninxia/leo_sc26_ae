@@ -1,0 +1,23 @@
+# llama.cpp workload for NVIDIA GPUs (CUDA backend)
+# Build: docker build -f docker/Dockerfile.llamacpp-nvidia -t leo-llamacpp-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+RUN git clone --depth 1 https://github.com/ggml-org/llama.cpp.git /opt/llama.cpp
+
+WORKDIR /opt/llama.cpp
+RUN cmake -B build \
+        -DGGML_CUDA=ON \
+        -DCMAKE_CUDA_ARCHITECTURES=${GPU_ARCH} \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_CUDA_FLAGS="-lineinfo" \
+    && cmake --build build -j$(nproc) \
+    && cmake --install build --prefix /opt/llamacpp
+
+ENV PATH="/opt/llamacpp/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/llamacpp/lib:${LD_LIBRARY_PATH}"
+WORKDIR /opt/leo

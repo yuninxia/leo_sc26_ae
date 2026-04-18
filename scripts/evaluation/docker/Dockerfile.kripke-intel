@@ -1,0 +1,31 @@
+# Kripke discrete ordinates transport benchmark for Intel GPUs
+# Build: docker build -f docker/Dockerfile.kripke-intel -t leo-kripke-intel:latest .
+# Requires: leo-hpctoolkit-intel:latest
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+# Kripke uses RAJA with SYCL backend for Intel GPUs
+RUN git clone --depth 1 --recursive https://github.com/LLNL/Kripke.git /opt/kripke-src
+
+# Add ocloc to PATH for AOT compilation (needed by icpx -fsycl-targets=spir64_gen)
+ENV PATH="/opt/hpctoolkit-src/subprojects/gtpin-4.5.0/Profilers/ocloc/Bin/intel64:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/hpctoolkit-src/subprojects/gtpin-4.5.0/Profilers/ocloc/Bin/intel64:/opt/hpctoolkit-src/subprojects/gtpin-4.5.0/Profilers/Lib/intel64:${LD_LIBRARY_PATH}"
+
+RUN which ocloc && ocloc --help 2>&1 | head -3
+
+RUN mkdir -p /opt/kripke-build && cd /opt/kripke-build && \
+    cmake /opt/kripke-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_CXX_COMPILER=icpx \
+        -DENABLE_SYCL=On \
+        -DENABLE_CHAI=On \
+        -DENABLE_MPI=Off \
+        -DENABLE_OPENMP=Off \
+        -DCMAKE_CXX_FLAGS="-g -O2 -fsycl" \
+    && make -j$(nproc) \
+    && mkdir -p /opt/kripke/bin \
+    && (cp kripke.exe /opt/kripke/bin/ 2>/dev/null || find . -name kripke.exe -exec cp {} /opt/kripke/bin/ \;)
+
+ENV PATH="/opt/kripke/bin:${PATH}"
+WORKDIR /opt/leo

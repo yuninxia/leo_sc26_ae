@@ -1,0 +1,29 @@
+# LULESH 2.0 OpenMP offload for Intel GPUs (PVC / Data Center Max)
+# Build: docker build -f docker/Dockerfile.lulesh-intel -t leo-lulesh-intel:latest .
+# Requires: leo-hpctoolkit-intel:latest
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-intel:${BASE_TAG}
+
+# Clone LULESH 2.0.2 (contains omp_4.0 OpenMP offload variant)
+RUN git clone --depth 1 --branch 2.0.2 https://github.com/LLNL/LULESH.git /opt/lulesh-src/LULESH
+
+# Patch Makefile: the link rule has hardcoded NVIDIA flags; replace with generic $(CXX) $(CXXFLAGS)
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    sed -i 's|$(CXX) -fopenmp=libomp.*-o $@|$(CXX) $(CXXFLAGS) $(OBJECTS2.0) $(LDFLAGS) -lstdc++ -lm -o $@|' Makefile && \
+    sed -i 's|-L/usr/local/cuda/nvvm/libdevice||' Makefile
+
+# ocloc needed for AOT compilation
+RUN apt-get update && apt-get install -y --no-install-recommends intel-ocloc && rm -rf /var/lib/apt/lists/*
+
+# Build with icpx OpenMP offload to Intel GPU (AOT for PVC)
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    make CXX="icpx" \
+         CXXFLAGS="-DUSE_MPI=0 -g -O2 -fiopenmp -fopenmp-targets=spir64_gen -Xopenmp-target-backend \"-device pvc\"" \
+         LDFLAGS="" \
+         OMPFLAGS="" && \
+    mkdir -p /opt/lulesh/bin && \
+    cp lulesh2.0 /opt/lulesh/bin/
+
+ENV PATH="/opt/lulesh/bin:${PATH}"
+WORKDIR /opt/leo

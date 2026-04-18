@@ -1,0 +1,39 @@
+# HPCToolkit layer for AMD GPU evaluation
+# Contains: HPCToolkit built from source (frequently changes)
+# Build: docker build -f docker/Dockerfile.hpctoolkit-amd -t leo-hpctoolkit-amd:latest .
+# Requires: leo-base-amd:latest (build with Dockerfile.base-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-base-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# ============================================
+# HPCToolkit (build from source with Meson + Ninja)
+# ============================================
+# Build from yuningxia/hpctoolkit (feature/hidden-stall-metrics branch)
+# This branch includes hidden stall metrics support for AMD stochastic sampling
+RUN git clone --depth 1 https://gitlab.com/yuningxia/hpctoolkit.git -b feature/hidden-stall-metrics /opt/hpctoolkit-src
+
+# Disable dyninst subproject wrap to use our system-built dyninst
+RUN mv /opt/hpctoolkit-src/subprojects/dyninst.wrap /opt/hpctoolkit-src/subprojects/dyninst.wrap.disabled 2>/dev/null || true
+
+# Create meson native file to locate dependencies
+RUN printf "[built-in options]\ncmake_prefix_path = ['/opt/dyninst', '${ROCM_PATH}']\n" > /opt/hpctoolkit-native.ini
+
+RUN meson setup \
+        --native-file /opt/hpctoolkit-native.ini \
+        --prefix=/opt/hpctoolkit \
+        /opt/hpctoolkit-build /opt/hpctoolkit-src \
+        -Drocm=enabled \
+        -Dhip_args="['--offload-arch=${GPU_TARGET}']" \
+    && cd /opt/hpctoolkit-build \
+    && ninja -j$(nproc) \
+    && ninja install
+
+ENV PATH="/opt/hpctoolkit/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/hpctoolkit/lib:/opt/hpctoolkit/lib64:${LD_LIBRARY_PATH}"
+
+WORKDIR /opt/leo
+ENTRYPOINT ["/bin/bash"]

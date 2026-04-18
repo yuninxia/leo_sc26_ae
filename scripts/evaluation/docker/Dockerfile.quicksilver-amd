@@ -1,0 +1,30 @@
+# QuickSilver Monte Carlo particle transport for AMD GPUs (HIP backend)
+# Source: Intel Velocity Bench (https://github.com/oneapi-src/Velocity-Bench)
+# Build: docker build -f docker/Dockerfile.quicksilver-amd -t leo-quicksilver-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Pin to 8284b59 (tested March 2026)
+RUN git clone https://github.com/oneapi-src/Velocity-Bench.git /opt/velocity-bench && \
+    cd /opt/velocity-bench && git checkout 8284b59
+
+# Build QuickSilver HIP with debug info and correct GPU arch for HPCToolkit
+# Note: The Velocity Bench HIP Makefile has no -O3 in CXXFLAGS, so we override
+# CXXFLAGS on the make command line to inject --offload-arch and debug flags.
+RUN cd /opt/velocity-bench/QuickSilver/HIP/src && \
+    make ROCM_PATH=${ROCM_PATH} \
+         CXXFLAGS="-I${ROCM_PATH}/include/ -ggdb -fno-omit-frame-pointer --offload-arch=${GPU_TARGET}" \
+         -sj && \
+    mkdir -p /opt/quicksilver/bin && \
+    cp qs /opt/quicksilver/bin/
+
+# Copy benchmark input files
+RUN cp -r /opt/velocity-bench/QuickSilver/Examples /opt/quicksilver/examples
+
+ENV PATH="/opt/quicksilver/bin:${PATH}"
+WORKDIR /opt/leo

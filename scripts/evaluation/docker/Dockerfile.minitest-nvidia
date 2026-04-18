@@ -1,0 +1,21 @@
+# OpenMP offload minitest for NVIDIA GPUs (H100, A100)
+# Build: docker build -f docker/Dockerfile.minitest-nvidia -t leo-minitest-nvidia:latest .
+# Requires: leo-nvhpc-nvidia:latest (shared NVHPC compiler layer)
+
+ARG BASE_TAG=latest
+ARG GPU_ARCH=90
+
+FROM leo-nvhpc-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+COPY 3rdparty/qahpct/minitest/src/ /opt/minitest-src/
+
+WORKDIR /opt/minitest-src
+RUN mkdir -p /opt/minitest/bin && \
+    nvc++ -g -O2 -mp -mp=gpu -gpu=cc${GPU_ARCH} \
+    -o /opt/minitest/bin/single.ompoffload.nvc.cudagpu \
+    single.cc ompgpu.cc -lm
+
+ENV PATH="/opt/minitest/bin:${PATH}"
+WORKDIR /opt/leo

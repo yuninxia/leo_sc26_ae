@@ -1,0 +1,30 @@
+# NVHPC compiler layer for NVIDIA OpenMP offload workloads on ARM (GH200)
+# Provides nvc++ on top of the base ARM image.
+#
+# Build: DOCKER_BUILDKIT=0 docker build -f docker/Dockerfile.nvhpc-nvidia-arm -t leo-nvhpc-nvidia-arm:latest .
+# Requires: leo-base-nvidia-arm:latest
+
+ARG BASE_TAG=latest
+
+# Stage 1: NVHPC SDK source
+FROM nvcr.io/nvidia/nvhpc:24.11-devel-cuda_multi-ubuntu22.04 AS nvhpc-source
+
+# Stage 2: Detect SDK platform path (aarch64 on GH200)
+FROM nvhpc-source AS nvhpc-detect
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then PLAT="Linux_aarch64"; else PLAT="Linux_x86_64"; fi && \
+    ln -s /opt/nvidia/hpc_sdk/${PLAT}/24.11 /opt/nvhpc-resolved
+
+# Stage 3: ARM base + NVHPC compiler
+ARG BASE_TAG
+FROM leo-base-nvidia-arm:${BASE_TAG}
+
+COPY --from=nvhpc-detect /opt/nvhpc-resolved/compilers/ /opt/nvhpc/compilers/
+COPY --from=nvhpc-detect /opt/nvhpc-resolved/cuda/ /opt/nvhpc/cuda/
+
+ENV NVHPC=/opt/nvhpc
+ENV PATH="/opt/nvhpc/compilers/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/nvhpc/compilers/lib:${LD_LIBRARY_PATH}"
+ENV NVHPC_CUDA_HOME="/opt/nvhpc/cuda"
+
+WORKDIR /opt/leo

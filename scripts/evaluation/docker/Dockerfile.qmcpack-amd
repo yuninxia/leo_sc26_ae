@@ -1,0 +1,32 @@
+# QMCPACK quantum Monte Carlo benchmark for AMD GPUs
+# Build: docker build -f docker/Dockerfile.qmcpack-amd -t leo-qmcpack-amd:latest .
+# Requires: leo-base-amd:latest (build with docker/Dockerfile.base-amd first)
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-amd:${BASE_TAG}
+
+ARG GPU_TARGET=gfx942
+ARG ROCM_PATH=/opt/rocm
+
+# Install QMCPACK dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libhdf5-dev liblapack-dev libblas-dev libfftw3-dev libboost-all-dev libxml2-dev \
+    hipblas-dev rocblas-dev rocsolver-dev rocthrust-dev rocprim-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/QMCPACK/qmcpack.git /opt/qmcpack-src
+
+RUN mkdir -p /opt/qmcpack-build && cd /opt/qmcpack-build && \
+    cmake /opt/qmcpack-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_CXX_COMPILER=${ROCM_PATH}/bin/amdclang++ \
+        -DCMAKE_C_COMPILER=${ROCM_PATH}/bin/amdclang \
+        -DCMAKE_CXX_FLAGS="-ggdb -fno-omit-frame-pointer" \
+        -DQMC_GPU_ARCHS=${GPU_TARGET} \
+        -DQMC_MPI=OFF \
+        -DBUILD_UNIT_TESTS=OFF \
+    && make -j$(nproc) qmcpack \
+    && mkdir -p /opt/qmcpack/bin && cp bin/qmcpack /opt/qmcpack/bin/
+
+ENV PATH="/opt/qmcpack/bin:${PATH}"
+WORKDIR /opt/leo

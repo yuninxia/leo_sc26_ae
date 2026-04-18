@@ -1,0 +1,38 @@
+# ArborX spatial search benchmark for NVIDIA GPUs (Kokkos CUDA backend)
+# Build: docker build -f docker/Dockerfile.arborx-nvidia -t leo-arborx-nvidia:latest .
+# Requires: leo-base-nvidia:latest (build with docker/Dockerfile.base-nvidia first)
+# Two-stage build: Kokkos first, then ArborX on top.
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+# Stage 1: Build Kokkos with CUDA
+RUN git clone --depth 1 https://github.com/kokkos/kokkos.git /opt/kokkos-src
+
+RUN mkdir -p /opt/kokkos-build && cd /opt/kokkos-build && \
+    cmake /opt/kokkos-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/opt/kokkos \
+        -DCMAKE_CXX_COMPILER=/opt/kokkos-src/bin/nvcc_wrapper \
+        -DCMAKE_CXX_FLAGS="-g -lineinfo" \
+        -DKokkos_ENABLE_SERIAL=ON \
+        -DKokkos_ENABLE_CUDA=ON \
+        -DKokkos_ENABLE_CUDA_LAMBDA=ON \
+        -DKokkos_ARCH_HOPPER90=ON \
+    && make -j$(nproc) && make install
+
+# Stage 2: Build ArborX with CUDA-enabled Kokkos
+RUN git clone --depth 1 https://github.com/arborx/ArborX.git /opt/arborx-src
+
+RUN mkdir -p /opt/arborx-build && cd /opt/arborx-build && \
+    cmake /opt/arborx-src \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_CXX_COMPILER=/opt/kokkos-src/bin/nvcc_wrapper \
+        -DCMAKE_CXX_FLAGS="-g -lineinfo" \
+        -DCMAKE_PREFIX_PATH=/opt/kokkos \
+        -DARBORX_ENABLE_EXAMPLES=ON \
+        -DARBORX_ENABLE_BENCHMARKS=OFF \
+    && make -j$(nproc)
+
+ENV PATH="/opt/arborx-build/examples/molecular_dynamics:${PATH}"
+WORKDIR /opt/leo

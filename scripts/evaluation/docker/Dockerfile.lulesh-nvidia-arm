@@ -1,0 +1,27 @@
+# LULESH 2.0 OpenMP offload for NVIDIA GPUs on ARM (GH200, Grace Hopper)
+# Build: DOCKER_BUILDKIT=0 docker build -f docker/Dockerfile.lulesh-nvidia-arm -t leo-lulesh-nvidia-arm:latest .
+# Requires: leo-nvhpc-nvidia-arm:latest
+
+ARG BASE_TAG=latest
+ARG GPU_ARCH=90
+
+FROM leo-nvhpc-nvidia-arm:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+RUN git clone --depth 1 --branch 2.0.2 https://github.com/LLNL/LULESH.git /opt/lulesh-src/LULESH
+
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    sed -i 's|$(CXX) -fopenmp=libomp.*-o $@|$(CXX) $(CXXFLAGS) $(OBJECTS2.0) $(LDFLAGS) -lstdc++ -lm -o $@|' Makefile && \
+    sed -i 's|-L/usr/local/cuda/nvvm/libdevice||' Makefile
+
+RUN cd /opt/lulesh-src/LULESH/omp_4.0 && \
+    make CXX="nvc++" \
+         CXXFLAGS="-DUSE_MPI=0 -fast -gopt -mp=gpu -gpu=cc${GPU_ARCH}" \
+         LDFLAGS="" \
+         OMPFLAGS="" && \
+    mkdir -p /opt/lulesh/bin && \
+    cp lulesh2.0 /opt/lulesh/bin/
+
+ENV PATH="/opt/lulesh/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,29 @@
+# QuickSilver Monte Carlo particle transport for NVIDIA GPUs (native CUDA backend)
+# Source: LLNL/quicksilver (https://github.com/LLNL/quicksilver)
+# Build: docker build -f docker/Dockerfile.quicksilver-native-nvidia -t leo-quicksilver-native-nvidia:latest .
+# Requires: leo-hpctoolkit-nvidia:latest
+
+ARG BASE_TAG=latest
+FROM leo-hpctoolkit-nvidia:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Clone LLNL's original QuickSilver
+RUN git clone --depth 1 https://github.com/LLNL/quicksilver.git /opt/quicksilver-src
+
+# Build with CUDA backend
+# QuickSilver Makefile supports HAVE_CUDA with nvcc
+RUN cd /opt/quicksilver-src/src && \
+    make -j$(nproc) \
+        CXX=nvcc \
+        CXXFLAGS="-g -lineinfo -x cu" \
+        CPPFLAGS="-DHAVE_CUDA -arch=sm_${GPU_ARCH} --extended-lambda -Wno-deprecated-gpu-targets" \
+        LDFLAGS="-arch=sm_${GPU_ARCH}" && \
+    mkdir -p /opt/quicksilver/bin && \
+    cp qs /opt/quicksilver/bin/
+
+# Copy benchmark input files
+RUN cp -r /opt/quicksilver-src/Examples /opt/quicksilver/examples
+
+ENV PATH="/opt/quicksilver/bin:${PATH}"
+WORKDIR /opt/leo

@@ -1,0 +1,24 @@
+# QuickSilver Monte Carlo particle transport for NVIDIA GPUs on ARM (GH200, Grace Hopper)
+# Source: Intel Velocity Bench (https://github.com/oneapi-src/Velocity-Bench)
+# Build: DOCKER_BUILDKIT=0 docker build -f docker/Dockerfile.quicksilver-nvidia-arm -t leo-quicksilver-nvidia-arm:latest .
+# Requires: leo-base-nvidia-arm:latest
+
+ARG BASE_TAG=latest
+FROM leo-base-nvidia-arm:${BASE_TAG}
+
+ARG GPU_ARCH=90
+
+# Pin to 8284b59 (tested March 2026)
+RUN git clone https://github.com/oneapi-src/Velocity-Bench.git /opt/velocity-bench && \
+    cd /opt/velocity-bench && git checkout 8284b59
+
+RUN cd /opt/velocity-bench/QuickSilver/CUDA/src && \
+    sed -i 's/-O3/-O3 -lineinfo/' Makefile && \
+    make USE_SM=${GPU_ARCH} CUDA_PATH=/usr/local/cuda -sj && \
+    mkdir -p /opt/quicksilver/bin && \
+    cp qs /opt/quicksilver/bin/
+
+RUN cp -r /opt/velocity-bench/QuickSilver/Examples /opt/quicksilver/examples
+
+ENV PATH="/opt/quicksilver/bin:${PATH}"
+WORKDIR /opt/leo

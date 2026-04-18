@@ -1,0 +1,113 @@
+# Base infrastructure for NVIDIA GPU evaluation on ARM (GH200, Grace Hopper)
+# Contains: system deps, Python 3.11, uv, meson, cmake, Dyninst, HPCToolkit, Leo
+# Build: docker build -f docker/Dockerfile.base-nvidia-arm -t leo-base-nvidia-arm:latest .
+# Workloads are built separately — see Dockerfile.rajaperf-nvidia-arm
+
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GPU_ARCH=90
+
+# ============================================
+# System dependencies
+# ============================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-12 g++-12 \
+    cmake \
+    git \
+    wget \
+    curl \
+    ca-certificates \
+    software-properties-common \
+    python3 \
+    python3-pip \
+    python3-venv \
+    pkg-config \
+    ninja-build \
+    libelf-dev \
+    libdw-dev \
+    libiberty-dev \
+    libbz2-dev \
+    libxerces-c-dev \
+    liblzma-dev \
+    libboost-all-dev \
+    libtbb-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python 3.11 (project requires >=3.11, system has 3.10)
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-dev python3.11-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv (fast Python package manager)
+RUN pip3 install --no-cache-dir uv
+
+# Install meson (HPCToolkit uses meson, not cmake)
+RUN uv tool install meson
+
+# Install newer cmake (workloads like RAJAPerf require >= 3.24)
+RUN uv tool install "cmake>=3.24,<4"
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+# ============================================
+# Dyninst (required by HPCToolkit, build from source)
+# ============================================
+WORKDIR /opt
+RUN git clone --depth 1 https://github.com/dyninst/dyninst.git /opt/dyninst-src && \
+    mkdir -p /opt/dyninst-build && cd /opt/dyninst-build && \
+    cmake /opt/dyninst-src \
+        -DCMAKE_INSTALL_PREFIX=/opt/dyninst \
+        -DCMAKE_BUILD_TYPE=Release \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /opt/dyninst-src /opt/dyninst-build
+
+# ============================================
+# HPCToolkit (build from source with Meson + Ninja)
+# ============================================
+RUN git clone --depth 1 https://gitlab.com/yuningxia/hpctoolkit.git -b feature/hidden-stall-metrics /opt/hpctoolkit-src
+
+# Disable dyninst subproject wrap to use our system-built dyninst
+RUN mv /opt/hpctoolkit-src/subprojects/dyninst.wrap /opt/hpctoolkit-src/subprojects/dyninst.wrap.disabled 2>/dev/null || true
+
+# Create meson native file to locate dependencies
+RUN printf "[built-in options]\ncmake_prefix_path = ['/opt/dyninst', '/usr/local/cuda']\n" > /opt/hpctoolkit-native.ini
+
+RUN meson setup \
+        --native-file /opt/hpctoolkit-native.ini \
+        --prefix=/opt/hpctoolkit \
+        /opt/hpctoolkit-build /opt/hpctoolkit-src \
+        -Dcuda=enabled \
+    && cd /opt/hpctoolkit-build \
+    && ninja -j$(nproc) \
+    && ninja install
+
+ENV PATH="/opt/hpctoolkit/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/hpctoolkit/lib:/opt/hpctoolkit/lib64:/opt/dyninst/lib:/opt/dyninst/lib64"
+
+# ============================================
+# Leo (analysis tool)
+# ============================================
+COPY . /opt/leo
+WORKDIR /opt/leo
+ENV CC=gcc-12
+ENV CXX=g++-12
+RUN uv sync --python python3.11
+
+# ============================================
+# Smoke test: verify Leo import and analysis
+# ============================================
+RUN uv run python scripts/analyze_benchmark.py \
+    tests/data/pc/nvidia/hpctoolkit-single.cudaoffload.gcc.cudagpu-measurements \
+    --arch h100 --top-n 1
+
+# ============================================
+# Environment
+# ============================================
+ENV GPU_VENDOR=nvidia
+ENV GPU_ARCH=${GPU_ARCH}
+
+ENTRYPOINT ["/bin/bash"]

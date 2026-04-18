@@ -1,0 +1,206 @@
+   Building leo @ file:///opt/leo
+      Built leo @ file:///opt/leo
+Uninstalled 1 package in 1ms
+Installed 1 package in 1ms
+Mode:       Whole-Program Analysis
+Sort by:    stall_cycles
+Top N:      5
+Arch:       mi300
+
+Stall breakdown unavailable for PC 0x8df8, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8e10, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8df8, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8df8, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 4 / 13 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0xaf1c, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xaf38, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xaf40, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xaf00, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0xaf54, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 20 / 39 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x8ccc, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8dd8, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8ccc, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 3 / 6 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x9808, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x9808, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x97ac, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x9730, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x96e4, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 8 / 22 edges, used total_stall fallback (conservative pruning)
+Stall breakdown unavailable for PC 0x8e3c, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8644, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x86cc, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x8654, using conservative pruning (total_stall fallback)
+Stall breakdown unavailable for PC 0x86cc, using conservative pruning (total_stall fallback)
+Opcode pruning: stall breakdown unavailable for 6 / 14 edges, used total_stall fallback (conservative pruning)
+====================================================================================================
+                             Leo Whole-Program GPU Performance Analysis                             
+====================================================================================================
+
+Database: /workspace/hpctoolkit-kripke.exe-database
+Measurements: /workspace/hpctoolkit-kripke.exe-measurements
+
+PROGRAM TOTALS
+----------------------------------------------------------------------------------------------------
+  Total Execution Time: 5.8520s
+  Total Stall Cycles:  286,085,087,232
+  Total GPU Cycles:    294,339,477,504
+  Overall Stall Ratio: 97.2%
+  Kernels Analyzed:    5
+  Kernels Skipped:     0
+
+TOP 5 KERNELS BY STALL CYCLES
+----------------------------------------------------------------------------------------------------
+#  Kernel                                      Time (s)      Stall Cycles   Stall %         Occupancy       Sample Rate
+----------------------------------------------------------------------------------------------------
+1  HipKernel                                     1.7494   157,772,939,264     95.1%        40% (vgpr)     94.8G/s / 15%
+2  _ZN4RAJA8internal22HipKernelLauncherF...      2.3235    93,818,191,872    100.0%        10% (vgpr)      40.4G/s / 6%
+3  HipKernel                                     1.4809    17,179,869,184    100.0%        40% (vgpr)      11.6G/s / 2%
+4  HipKernel                                     0.1578    10,435,428,352     99.4%        30% (vgpr)     66.6G/s / 10%
+5  HipKernel                                     0.1395     6,677,331,968    100.0%        40% (vgpr)      47.9G/s / 7%
+----------------------------------------------------------------------------------------------------
+
+KERNEL #1: HipKernel
+  GPU Binary: 8b657f73cf71fb985c89fa4565c82b6f.gpubin
+  Occupancy: 40% (16/40 waves/CU, limited by vgpr) [VGPRs=30, SGPRs=59, LDS=0B]
+=====================================================================================================================
+                                             Leo GPU Performance Analysis                                            
+=====================================================================================================================
+WARNING: Very low profile coverage: 10/1164 (0.9%)
+Kernel: void RAJA::internal::HipKernelLauncherFixed<1024, RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Direction>&) const::{lambda(Kripke::Moment, Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>, RAJA::internal::HipStatementListExecutor<RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Direction>&) const::{lambda(Kripke::Moment, Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>, camp::list<RAJA::statement::For<0l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, -1, 0> >, RAJA::statement::For<1l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)1, -1, 0> >, RAJA::statement::For<2l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, 0, -1> >, RAJA::statement::For<3l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > > > >, RAJA::internal::LoopTypes<camp::list<void, void, void, void>, camp::list<void, void, void, void> > > >(RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Direction>&) const::{lambda(Kripke::Moment, Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>) Architecture: AMD MI300
+Total Stall Cycles: 142,572,781,568
+=====================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+---------------------------------------------------------------------------------------------------------------------
+Stall Location   Stall Opcode              Root Cause Location Root Opcode                     Cycles % Total Speedup
+---------------------------------------------------------------------------------------------------------------------
+LTimes.cpp:62:24 s_waitcnt vmcnt(0)   <-- LTimes.cpp:62:27    global_load_dwordx2    105,193,144,320   73.8%   3.43x
+For.hpp:277:40   s_add_u32            <-- For.hpp:277:40      s_add_u32               29,796,335,616   20.9%   1.25x
+LTimes.cpp:62:27 global_load_dwordx2  <-- LTimes.cpp:62:27    global_load_dwordx2      3,690,987,520    2.6%   1.03x
+For.hpp:277:5    s_and_b64            <-- For.hpp:277:5       s_and_b64                1,946,157,056    1.4%   1.01x
+LTimes.cpp:62    global_store_dwordx2 <-- LTimes.cpp:62       v_fmac_f64_e32           1,946,157,056    1.4%   1.01x
+---------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+---------------------------------------------------------------------------------------------------------------------
+  global_store_dwordx2 @ LTimes.cpp:62 ← v_fmac_f64_e32 @ LTimes.cpp:62 ← global_load_dwordx2 @ LTimes.cpp:62:27  1,946,157,056
+---------------------------------------------------------------------------------------------------------------------
+=====================================================================================================================
+
+KERNEL #2: _ZN4RAJA8internal22HipKernelLauncherFixedILi102...
+  GPU Binary: 95747e1e006d752f9af2a01142c0f30b.gpubin
+  Occupancy: 10% (4/40 waves/CU, limited by vgpr) [VGPRs=93, SGPRs=106, LDS=0B]
+=========================================================================================================================================
+                                                       Leo GPU Performance Analysis                                                      
+=========================================================================================================================================
+WARNING: Very low profile coverage: 24/7739 (0.3%)
+Kernel: _ZN4RAJA8internal22HipKernelLauncherFixedILi1024ENS0_8LoopDataIN4camp5tupleIJNS_4SpanINS_9Iterators16numeric_iteratorIN6Kripke9DirectionElPS9_EElEENS5_INS7_INS8_5GroupElPSD_EElEENS5_INS6_24strided_numeric_iteratorINS8_5ZoneKElPSI_EElEENS5_INSH_INS8_5ZoneJElPSM_EElEENS5_INSH_INS8_5ZoneIElPSQ_EElEEEEENS4_IJEEENS3_9resources2v13HipEJZNK9SweepSdomclINS8_11ArchLayoutTINS8_9ArchT_HIPENS8_11LayoutT_DGZEEEEEvT_RNS8_4Core9DataStoreENS8_6SdomIdEEUlS9_SD_SI_SM_SQ_E_EEENS0_24HipStatementListExecutorIS1B_NS3_4listIJNS_9statement3ForILl0ENS_6policy3hip11hip_indexerINS_17iteration_mapping11StridedLoopILm0EEELNS_23kernel_sync_requirementE0EJNS_3hip11IndexGlobalILNS_9named_dimE0ELin1ELi0EEEEEEJNS1F_ILl1ENS1I_IS1L_LS1M_0EJNS1O_ILS1P_1ELin1ELi0EEEEEEJNS1F_ILl3ENS1I_IS1L_LS1M_1EJNS1O_ILS1P_1ELi0ELin1EEEEEEJNS1F_ILl4ENS1I_IS1L_LS1M_1EJNS1O_ILS1P_0ELi0ELin1EEEEEEJNS1E_10HyperplaneILl2ENS1G_10sequential8seq_execENS3_7int_seqIlJLl3ELl4EEEENS1E_6LambdaILl0EJEEEJNS1E_14HipSyncThreadsEEEEEEEEEEEEEEEEEEENS0_9LoopTypesINS1D_IJvvvvvEEES2D_EEEEEEvT0_ Architecture: AMD MI300
+Total Stall Cycles: 92,945,776,640
+=========================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-----------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode            Root Cause Location          Root Opcode                      Cycles % Total Speedup
+-----------------------------------------------------------------------------------------------------------------------------------------
+SweepSubdomain.cpp:99:51     s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:99:53     global_load_dwordx2      13,455,327,232   14.5%   1.17x
+amd_device_functions.h:778:9 s_barrier          <-- amd_device_functions.h:778:9 s_barrier                10,804,527,104   11.6%   1.13x
+SweepSubdomain.cpp:96:19     s_nop              <-- SweepSubdomain.cpp:96:19     s_nop                     8,690,597,888    9.4%   1.10x
+SweepSubdomain.cpp:96:17     s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:95        global_load_dwordx2       7,583,301,632    8.2%   1.09x
+SweepSubdomain.cpp:96:17     s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:96        global_load_dwordx2       7,583,301,632    8.2%   1.09x
+SweepSubdomain.cpp:104:50    s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:104:52    global_load_dwordx2       6,727,663,616    7.2%   1.08x
+SweepSubdomain.cpp:104:50    s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:101       global_store_dwordx2      6,727,663,616    7.2%   1.08x
+SweepSubdomain.cpp:97:17     s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:97:19     global_load_dwordx2       4,362,076,160    4.7%   1.05x
+SweepSubdomain.cpp:105:50    s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:104:32    global_store_dwordx2      3,892,314,112    4.2%   1.04x
+SweepSubdomain.cpp:105:50    s_waitcnt vmcnt(0) <-- SweepSubdomain.cpp:105:52    global_load_dwordx2       3,892,314,112    4.2%   1.04x
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-----------------------------------------------------------------------------------------------------------------------------------------
+  s_waitcnt @ SweepSubdomain.cpp:104:50 ← global_load_dwordx2 @ SweepSubdomain.cpp:104:52 ← v_mad_u64_u32 @ For.hpp:204  6,727,663,616
+  s_waitcnt @ SweepSubdomain.cpp:105:50 ← global_store_dwordx2 @ SweepSubdomain.cpp:104:32 ← v_fma_f64 @ SweepSubdomain.cpp:104  3,892,314,112
+-----------------------------------------------------------------------------------------------------------------------------------------
+=========================================================================================================================================
+
+KERNEL #3: HipKernel
+  GPU Binary: 93e4f7f3f105ec3720c52b7925be2918.gpubin
+  Occupancy: 40% (16/40 waves/CU, limited by vgpr) [VGPRs=28, SGPRs=61, LDS=0B]
+========================================================================================================================
+                                              Leo GPU Performance Analysis                                              
+========================================================================================================================
+WARNING: Very low profile coverage: 4/1156 (0.3%)
+Kernel: void RAJA::internal::HipKernelLauncherFixed<1024, RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LPlusTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Moment>&) const::{lambda(Kripke::Direction, Kripke::Moment, Kripke::Group, Kripke::Zone)#1}>, RAJA::internal::HipStatementListExecutor<RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LPlusTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Moment>&) const::{lambda(Kripke::Direction, Kripke::Moment, Kripke::Group, Kripke::Zone)#1}>, camp::list<RAJA::statement::For<0l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, -1, 0> >, RAJA::statement::For<2l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)1, -1, 0> >, RAJA::statement::For<3l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, 0, -1> >, RAJA::statement::For<1l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > > > >, RAJA::internal::LoopTypes<camp::list<void, void, void, void>, camp::list<void, void, void, void> > > >(RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, LPlusTimesSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Moment>&) const::{lambda(Kripke::Direction, Kripke::Moment, Kripke::Group, Kripke::Zone)#1}>) Architecture: AMD MI300
+Total Stall Cycles: 17,045,651,456
+========================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+------------------------------------------------------------------------------------------------------------------------
+Stall Location       Stall Opcode            Root Cause Location  Root Opcode                     Cycles % Total Speedup
+------------------------------------------------------------------------------------------------------------------------
+LPlusTimes.cpp:57:24 s_waitcnt vmcnt(0) <-- LPlusTimes.cpp:57:27 global_load_dwordx2     15,535,702,016   91.1%  11.29x
+LPlusTimes.cpp:57:27 s_mov_b64          <-- LPlusTimes.cpp:57:27 s_mov_b64                1,207,959,552    7.1%   1.08x
+For.hpp:277:5        s_add_u32          <-- For.hpp:277:5        s_add_u32                  301,989,888    1.8%   1.02x
+------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
+
+KERNEL #4: HipKernel
+  GPU Binary: b7ffe05fb63cdb7f2264b49c4a724c4b.gpubin
+  Occupancy: 30% (12/40 waves/CU, limited by vgpr) [VGPRs=34, SGPRs=96, LDS=0B]
+=========================================================================================================================
+                                               Leo GPU Performance Analysis                                              
+=========================================================================================================================
+WARNING: Very low profile coverage: 19/1342 (1.4%)
+Kernel: void RAJA::internal::HipKernelLauncherFixed<1024, RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, ScatteringSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Material, Kripke::Legendre, Kripke::GlobalGroup, Kripke::GlobalGroup>&, Kripke::Core::Field<Kripke::MixElem, Kripke::Zone>&, Kripke::Core::Field<int, Kripke::Zone>&, Kripke::Core::Field<Kripke::Material, Kripke::MixElem>&, Kripke::Core::Field<double, Kripke::MixElem>&, Kripke::Core::Field<Kripke::Legendre, Kripke::Moment>&) const::{lambda(Kripke::Moment, Kripke::Group, Kripke::Group, Kripke::Zone)#1}>, RAJA::internal::HipStatementListExecutor<RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, ScatteringSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Material, Kripke::Legendre, Kripke::GlobalGroup, Kripke::GlobalGroup>&, Kripke::Core::Field<Kripke::MixElem, Kripke::Zone>&, Kripke::Core::Field<int, Kripke::Zone>&, Kripke::Core::Field<Kripke::Material, Kripke::MixElem>&, Kripke::Core::Field<double, Kripke::MixElem>&, Kripke::Core::Field<Kripke::Legendre, Kripke::Moment>&) const::{lambda(Kripke::Moment, Kripke::Group, Kripke::Group, Kripke::Zone)#1}>, camp::list<RAJA::statement::For<0l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, -1, 0> >, RAJA::statement::For<1l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)1, -1, 0> >, RAJA::statement::For<3l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, 0, -1> >, RAJA::statement::For<2l, RAJA::policy::sequential::seq_exec, RAJA::statement::Lambda<0l> > > > > >, RAJA::internal::LoopTypes<camp::list<void, void, void, void>, camp::list<void, void, void, void> > > >(RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Moment, long, Kripke::Moment*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, ScatteringSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Moment, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Material, Kripke::Legendre, Kripke::GlobalGroup, Kripke::GlobalGroup>&, Kripke::Core::Field<Kripke::MixElem, Kripke::Zone>&, Kripke::Core::Field<int, Kripke::Zone>&, Kripke::Core::Field<Kripke::Material, Kripke::MixElem>&, Kripke::Core::Field<double, Kripke::MixElem>&, Kripke::Core::Field<Kripke::Legendre, Kripke::Moment>&) const::{lambda(Kripke::Moment, Kripke::Group, Kripke::Group, Kripke::Zone)#1}>) Architecture: AMD MI300
+Total Stall Cycles: 10,099,884,032
+=========================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+-------------------------------------------------------------------------------------------------------------------------
+Stall Location       Stall Opcode            Root Cause Location  Root Opcode                      Cycles % Total Speedup
+-------------------------------------------------------------------------------------------------------------------------
+For.hpp:277:40       s_add_u32          <-- For.hpp:277:40       s_add_u32                 4,664,066,048   46.2%   1.85x
+Scattering.cpp:97:43 s_nop              <-- Scattering.cpp:97:43 s_nop                       939,524,096    9.3%   1.10x
+Scattering.cpp:97:31 s_waitcnt vmcnt(0) <-- Scattering.cpp:97:31 global_load_dwordx2         939,524,096    9.3%   1.10x
+Layout.hpp:191:48    s_waitcnt vmcnt(1) <-- Scattering.cpp:92:30 global_load_dwordx2         838,860,800    8.3%   1.09x
+Scattering.cpp:95:22 s_waitcnt vmcnt(0) <-- Scattering.cpp:95:25 global_load_dwordx2         458,577,237    4.5%   1.05x
+Scattering.cpp:95:22 s_waitcnt vmcnt(0) <-- Scattering.cpp:92:30 global_load_dwordx2         458,577,237    4.5%   1.05x
+Scattering.cpp:95:22 s_waitcnt vmcnt(0) <-- Scattering.cpp:93:33 global_load_dwordx2         458,577,237    4.5%   1.05x
+Scattering.cpp:91    s_waitcnt vmcnt(1) <-- Scattering.cpp:87:33 global_load_dwordx2         234,881,024    2.3%   1.02x
+Scattering.cpp:91    s_waitcnt vmcnt(1) <-- Scattering.cpp:97    global_store_dwordx2        234,881,024    2.3%   1.02x
+For.hpp:277:5        v_lshlrev_b64      <-- For.hpp:277:5        v_lshlrev_b64               234,881,024    2.3%   1.02x
+-------------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCY CHAINS (multi-hop root cause paths)
+-------------------------------------------------------------------------------------------------------------------------
+  s_waitcnt @ Scattering.cpp:95:22 ← global_load_dwordx2 @ Scattering.cpp:95:25 ← v_mad_u64_u32 @ Layout.hpp:191  458,577,237
+-------------------------------------------------------------------------------------------------------------------------
+=========================================================================================================================
+
+KERNEL #5: HipKernel
+  GPU Binary: e0b4dc2e564b8bd95daa01e8066360bc.gpubin
+  Occupancy: 40% (16/40 waves/CU, limited by vgpr) [VGPRs=26, SGPRs=52, LDS=129B]
+==========================================================================================================================================
+                                                       Leo GPU Performance Analysis                                                       
+==========================================================================================================================================
+WARNING: Very low profile coverage: 12/4918 (0.2%)
+Kernel: void RAJA::internal::HipKernelLauncherFixed<1024, RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, PopulationSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction>&, Kripke::Core::Field<double, Kripke::Zone>&, double*) const::{lambda(Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>, RAJA::internal::HipStatementListExecutor<RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, PopulationSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction>&, Kripke::Core::Field<double, Kripke::Zone>&, double*) const::{lambda(Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>, camp::list<RAJA::statement::For<0l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)2, 0, -1> >, RAJA::statement::For<1l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::StridedLoop<0ul>, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)1, 0, -1> >, RAJA::statement::For<2l, RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct, (RAJA::kernel_sync_requirement)0, RAJA::hip::IndexGlobal<(RAJA::named_dim)0, 32, 0> >, RAJA::statement::Lambda<0l> > > > >, RAJA::internal::LoopTypes<camp::list<void, void, void>, camp::list<void, void, void> > > >(RAJA::internal::LoopData<camp::tuple<RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Direction, long, Kripke::Direction*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Group, long, Kripke::Group*>, long>, RAJA::Span<RAJA::Iterators::numeric_iterator<Kripke::Zone, long, Kripke::Zone*>, long> >, camp::tuple<>, camp::resources::v1::Hip, PopulationSdom::operator()<Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ> >(Kripke::ArchLayoutT<Kripke::ArchT_HIP, Kripke::LayoutT_DGZ>, Kripke::SdomId, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Set const&, Kripke::Core::Field<double, Kripke::Direction, Kripke::Group, Kripke::Zone>&, Kripke::Core::Field<double, Kripke::Direction>&, Kripke::Core::Field<double, Kripke::Zone>&, double*) const::{lambda(Kripke::Direction, Kripke::Group, Kripke::Zone)#1}>) Architecture: AMD MI300
+Total Stall Cycles: 6,677,331,968
+==========================================================================================================================================
+
+STALL ANALYSIS (PC Sampling → Back-slicing → Root Cause)
+------------------------------------------------------------------------------------------------------------------------------------------
+Stall Location               Stall Opcode              Root Cause Location          Root Opcode                     Cycles % Total Speedup
+------------------------------------------------------------------------------------------------------------------------------------------
+Population.cpp:58:28         s_waitcnt vmcnt(1)   <-- Population.cpp:58:30         global_load_dwordx2      3,758,096,384   56.3%   2.29x
+amd_device_functions.h:778:9 s_barrier            <-- amd_device_functions.h:778:9 s_barrier                1,140,850,688   17.1%   1.21x
+Population.cpp:58:23         global_load_dwordx2  <-- Population.cpp:58:23         global_load_dwordx2      1,006,632,960   15.1%   1.18x
+reduce.hpp:142:30            s_waitcnt vmcnt(0)   <-- amd_hip_runtime.h:263        global_load_ushort         603,979,776    9.0%   1.10x
+reduce.hpp:1102:10           s_waitcnt lgkmcnt(0) <-- reduce.hpp:1102:10           s_load_dwordx4              33,554,432    0.5%   1.01x
+reduce.hpp:181:30            s_waitcnt vmcnt(0)   <-- amd_hip_atomic.h:697:10      global_atomic_inc           33,554,432    0.5%   1.01x
+amd_device_functions.h:778:9 s_or_b64             <-- amd_device_functions.h:778:9 s_or_b64                    33,554,432    0.5%   1.01x
+amd_hip_runtime.h:263        global_load_ushort   <-- amd_hip_runtime.h:263        global_load_ushort          33,554,432    0.5%   1.01x
+Operators.hpp:369:22         s_waitcnt vmcnt(0)   <-- Population.cpp:58:30         global_load_dwordx2         33,554,432    0.5%   1.01x
+------------------------------------------------------------------------------------------------------------------------------------------
+==========================================================================================================================================
+====================================================================================================
