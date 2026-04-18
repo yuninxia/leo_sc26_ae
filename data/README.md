@@ -10,7 +10,7 @@ The `scripts/download_data.sh` script fetches pre-collected HPCToolkit measureme
 - 16 HPC application measurements (6 workloads × 2-3 vendors)
 - Per-kernel RAJAPerf data (15 kernels × 4 vendor variants)
 
-Total: ~1.9 GB uncompressed, ~1 GB compressed.
+Total: ~8.5 GB uncompressed, ~1 GB compressed. Most of the size (~7.3 GB) is per-kernel RAJAPerf data; the 16 HPC app measurements add ~1.2 GB.
 
 ## Primary Source: GitHub Release
 

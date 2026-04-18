@@ -5,7 +5,7 @@
 # Paths — override via env vars as needed
 LEO="${LEO_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 R="${RESULTS_DIR:-$LEO/results}"
-PK="${PER_KERNEL_DIR:-$LEO/tests/data/pc/per-kernel}"
+PK="${PER_KERNEL_DIR:-$R/per-kernel}"
 
 docker run --rm \
   -v "$LEO/src/leo:/opt/leo/src/leo:ro" \

@@ -60,7 +60,7 @@ See `docs/HARDWARE_SETUP.md` for vendor-specific details.
 
 ### Pre-collected Profiling Data (GitHub Release)
 
-No GPU needed for LEO analysis — one command downloads all pre-collected measurements (~1 GB compressed, ~1.9 GB extracted):
+No GPU needed for LEO analysis — one command downloads all pre-collected measurements (~1 GB compressed, ~8.5 GB extracted):
 
 ```bash
 bash scripts/download_data.sh
@@ -87,7 +87,7 @@ cd leo_sc26_ae
 curl -LsSf https://astral.sh/uv/install.sh | sh  # if uv not installed
 uv sync
 
-# 3. Download pre-collected profiling data (~1 GB, ~5 min)
+# 3. Download pre-collected profiling data (~1 GB download, ~8.5 GB extracted)
 bash scripts/download_data.sh
 
 # 4. Reproduce Figure 5 (SDC coverage)
