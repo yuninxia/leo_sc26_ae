@@ -9,7 +9,8 @@ LEO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DATA_DIR="${LEO_ROOT}/results"
 TARBALL="leo-sc26-measurements.tar.gz"
 RELEASE_TAG="v1.0-sc26-data"
-GH_URL="https://github.com/yuninxia/leo_sc26_ae/releases/download/${RELEASE_TAG}/${TARBALL}"
+GH_REPO="yuninxia/leo_sc26_ae"
+GH_URL="https://github.com/${GH_REPO}/releases/download/${RELEASE_TAG}/${TARBALL}"
 
 # Optional Zenodo mirror (set ZENODO_URL env var or edit below once DOI is assigned)
 ZENODO_URL="${ZENODO_URL:-}"
@@ -23,7 +24,7 @@ fi
 mkdir -p "${DATA_DIR}"
 TMP="/tmp/${TARBALL}"
 
-download_from() {
+download_curl() {
   local url="$1"
   echo "Downloading from: ${url}"
   if command -v curl >/dev/null 2>&1; then
@@ -36,14 +37,34 @@ download_from() {
   fi
 }
 
-if ! download_from "${GH_URL}"; then
-  if [ -n "${ZENODO_URL}" ]; then
-    echo "GitHub download failed; trying Zenodo mirror..."
-    download_from "${ZENODO_URL}"
-  else
-    echo "ERROR: failed to download from GitHub and no Zenodo mirror configured"
-    exit 1
+download_gh() {
+  # Use `gh` CLI when available — works even if the repo is private,
+  # provided the user has run `gh auth login`.
+  if ! command -v gh >/dev/null 2>&1; then
+    return 1
   fi
+  if ! gh auth status >/dev/null 2>&1; then
+    return 1
+  fi
+  echo "Downloading via gh CLI (repo: ${GH_REPO}, tag: ${RELEASE_TAG})..."
+  gh release download "${RELEASE_TAG}" --repo "${GH_REPO}" \
+    --pattern "${TARBALL}" --output "${TMP}" --clobber
+}
+
+ok=0
+if download_curl "${GH_URL}"; then
+  ok=1
+elif download_gh; then
+  ok=1
+elif [ -n "${ZENODO_URL}" ] && download_curl "${ZENODO_URL}"; then
+  ok=1
+fi
+
+if [ "$ok" -ne 1 ]; then
+  echo "ERROR: failed to download tarball."
+  echo "  - If the GitHub repo is private, authenticate with: gh auth login"
+  echo "  - Or set ZENODO_URL to an archival mirror and re-run."
+  exit 1
 fi
 
 echo ""
