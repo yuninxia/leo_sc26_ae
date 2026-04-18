@@ -58,17 +58,17 @@ git checkout feature/hidden-stall-metrics
 
 See `docs/HARDWARE_SETUP.md` for vendor-specific details.
 
-### Pre-collected Profiling Data (Zenodo)
+### Pre-collected Profiling Data (GitHub Release)
 
-To skip profiling (no GPU required for analysis), download measurement databases from Zenodo:
+No GPU needed for LEO analysis — one command downloads all pre-collected measurements (~1 GB compressed, ~1.9 GB extracted):
 
 ```bash
-# TODO: Zenodo DOI pending
-# mkdir -p data/hpctoolkit-measurements
-# cd data/hpctoolkit-measurements
-# wget https://zenodo.org/record/XXXXXXX/files/leo-sc26-data.tar.gz
-# tar xzf leo-sc26-data.tar.gz
+bash scripts/download_data.sh
 ```
+
+This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `time_analysis.sh`) run without GPU hardware.
+
+A Zenodo mirror is also available for archival citation (DOI: TBD).
 
 ### LLM API (optional, Table V only)
 
@@ -76,10 +76,10 @@ Reproducing Table V requires **Gemini 3.1 Pro** API access (Google Cloud). Set `
 
 ---
 
-## Quick Start (10 min, no GPU required)
+## Quick Start (15 min, no GPU required)
 
 ```bash
-# 1. Clone
+# 1. Clone (502 MB, ~2 min)
 git clone https://github.com/yuninxia/leo_sc26_ae.git
 cd leo_sc26_ae
 
@@ -87,7 +87,13 @@ cd leo_sc26_ae
 curl -LsSf https://astral.sh/uv/install.sh | sh  # if uv not installed
 uv sync
 
-# 3. Verify LEO analyzer works
+# 3. Download pre-collected profiling data (~1 GB, ~5 min)
+bash scripts/download_data.sh
+
+# 4. Reproduce Figure 5 (SDC coverage)
+bash scripts/collect_sdc.sh
+
+# 5. (Optional) Verify LEO analyzer unit tests
 uv run pytest tests/ -v -m "not slow" --ignore-glob="*test_integration*"
 ```
 
