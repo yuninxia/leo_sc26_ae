@@ -221,14 +221,19 @@ Third-party benchmarks retain their original licenses (see `benchmarks/*/LICENSE
 
 ## Citation
 
+The paper is currently under peer review. Until acceptance, please cite as:
+
 ```bibtex
-@inproceedings{xia2026leo,
-  title     = {{LEO}: Tracing {GPU} Stall Root Causes via Cross-Vendor Backward Slicing},
-  author    = {Xia, Yuning and Mellor-Crummey, John},
-  booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis (SC26)},
-  year      = {2026}
+@unpublished{xia2026leo,
+  author = {Xia, Yuning and Mellor-Crummey, John},
+  title  = {{LEO}: Tracing {GPU} Stall Root Causes via Cross-Vendor Backward Slicing},
+  year   = {2026},
+  note   = {Manuscript submitted for publication}
 }
 ```
+
+Once accepted, this entry will be updated to an `@inproceedings` form with the
+full SC26 proceedings information.
 
 ## Contact
 
