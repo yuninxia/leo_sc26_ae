@@ -90,12 +90,20 @@ uv sync
 # 3. Download pre-collected profiling data (~1 GB download, ~8.5 GB extracted)
 bash scripts/download_data.sh
 
-# 4. Reproduce Figure 5 (SDC coverage)
+# 4. Build the universal analysis Docker image (~20 min one-time)
+bash scripts/evaluation/build_containers.sh universal --base-only
+
+# 5. Reproduce Figure 5 (SDC coverage)
 bash scripts/collect_sdc.sh
 
-# 5. (Optional) Verify LEO analyzer unit tests
+# 6. (Optional) Verify LEO analyzer unit tests
 uv run pytest tests/ -v -m "not slow" --ignore-glob="*test_integration*"
 ```
+
+> **Compiler note (RHEL/CentOS 8):** `uv sync` builds the vendored `hpcanalysis`
+> C++ extension and requires GCC 11+. If `gcc --version` reports 8.x, prefix
+> `uv sync` with `scl enable gcc-toolset-11 --`. Ubuntu 22.04+ and recent
+> Fedora ship GCC 11+ by default.
 
 ---
 
@@ -121,10 +129,9 @@ The evaluation has four tasks. For full detail, see `ad_appendix.pdf`.
 
 Uses Docker + pre-collected HPCToolkit databases. No GPU needed.
 
-```bash
-# Build universal analysis container (one-time, ~20 min)
-bash scripts/evaluation/build_containers.sh universal --base-only
+**Prerequisites:** steps 2–4 of Quick Start (`uv sync`, `download_data.sh`, universal Docker image). The two scripts below expect the `leo-base-universal` image to be built locally and data extracted under `results/`.
 
+```bash
 # Compute SDC metrics for Figure 5
 bash scripts/collect_sdc.sh
 
