@@ -27,9 +27,9 @@ RAJAPERF_KERNELS = [
 ]
 
 VENDORS = [
-    ("nvidia", "nvidia-arm", "h100"),  # (display, dir_name, arch)
-    ("amd",    "amd",        "mi300"),
-    ("intel",  "intel",      "pvc"),
+    ("nvidia", "nvidia-athena", "h100"),  # GH200 arm64 (paper Figure 5 uses these runs)
+    ("amd",    "amd",           "mi300"),
+    ("intel",  "intel",         "pvc"),
 ]
 
 # HPC apps: (display_name, data_mount_name, measurements_subdir, arch, vendors_available)
