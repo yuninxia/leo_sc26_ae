@@ -232,7 +232,7 @@ Third-party benchmarks retain their original licenses (see `benchmarks/*/LICENSE
 
 ## Contact
 
-- Yuning Xia — yx87@rice.edu
+- Yuning Xia — yuning.xia@rice.edu
 - John Mellor-Crummey — johnmc@rice.edu
 
 ## Acknowledgments

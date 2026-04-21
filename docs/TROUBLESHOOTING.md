@@ -113,4 +113,4 @@ Gemini 3.1 Pro (via OpenRouter) has per-minute QPS limits. Reduce concurrency vi
 
 ## Still Stuck?
 
-Contact: yx87@rice.edu
+Contact: yuning.xia@rice.edu
