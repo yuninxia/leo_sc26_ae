@@ -72,7 +72,7 @@ A Zenodo mirror is also available for archival citation (DOI: TBD).
 
 ### LLM API (optional, Table V only)
 
-Reproducing Table V requires **Gemini 3.1 Pro** API access (Google Cloud). Set `GOOGLE_API_KEY` in your environment. Table IV and Figure 5 do not need LLM access.
+Reproducing Table V requires **Gemini 3.1 Pro** via the OpenRouter proxy (https://openrouter.ai). Set `OPENROUTER_API_KEY` in your environment. Table IV and Figure 5 do not need LLM access.
 
 ---
 
@@ -164,12 +164,17 @@ Optimization patches for each case study are in `benchmarks/*/optimized/`. Diff 
 
 ### Task 4: LLM diagnostic study (Table V, optional)
 
+Reproduces the Table V **semantic-match** numbers (how well the LLM, given each diagnostic context, identifies the optimization site). The paper's **speedup** column additionally requires compiling and benchmarking LLM-generated kernels on GPUs and is out of scope for CPU-only reviewers.
+
 ```bash
-export GOOGLE_API_KEY=your_key_here
-uv run python scripts/run_llm_eval.py --model gemini-3.1-pro --trials 5
+export OPENROUTER_API_KEY=your_key_here    # obtain from openrouter.ai
+uv run python -m scripts.validation.main \
+    --llm-eval \
+    --llm-model google/gemini-3.1-pro \
+    --llm-log results/llm_eval.log
 ```
 
-Pre-collected LLM outputs are included in the artifact for reference.
+Routes to Gemini 3.1 Pro via OpenRouter. Reduce `--llm-concurrency` (default 5) if you hit per-minute rate limits. Pre-collected LLM outputs are included in the artifact for reference.
 
 ---
 
@@ -185,7 +190,7 @@ Pre-collected LLM outputs are included in the artifact for reference.
 
 - Pre-collected data on Zenodo may have slightly different timestamps than those in the paper but produces identical LEO analysis output.
 - Intel PVC results exhibit higher run-to-run variability (documented 9% CV); ±9% tolerance recommended.
-- LLM study is non-deterministic; best-of-5 speedups for specific kernels may vary ±0.1×, but geomean and compile rate reproduce.
+- LLM study is non-deterministic. The semantic-match evaluation (`--llm-eval`) reports a 0–100 score per kernel/vendor — per-pair values may vary ±10 across runs, but overall trends (relative ranking of diagnostic contexts) reproduce. The paper's best-of-5 speedup column was produced by a separate compile-and-benchmark harness that requires GPUs and is not included here.
 
 ---
 
