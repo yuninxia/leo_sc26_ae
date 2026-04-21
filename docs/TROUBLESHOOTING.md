@@ -4,6 +4,21 @@ Common issues when reproducing LEO results.
 
 ## Build Issues
 
+### `uv sync` fails compiling `hpcanalysis` (OpenMP `shared` errors)
+
+**Symptom:** `error: 'profiles_count' is predetermined 'shared' for 'shared'` during the `hpcanalysis` C++ build.
+
+**Cause:** `hpcanalysis` requires GCC 11 or newer; on RHEL 8 / CentOS 8 the default `gcc` is 8.5.
+
+**Fix:** Activate a newer toolchain before running `uv sync`:
+```bash
+# RHEL/CentOS 8 with gcc-toolset-11 or newer installed via dnf
+scl enable gcc-toolset-11 -- uv sync
+# or for Ubuntu 22.04+: the default GCC 11+ works — just `uv sync`
+```
+
+Verify the compiler is recent enough: `gcc --version` should report 11.x or newer.
+
 ### hpcstruct segfaults (exit 139) on Intel
 
 **Cause:** Debug TBB libraries linked into hpcstruct.
@@ -90,7 +105,7 @@ This is expected behavior of the Activity API (documented in the paper, Section 
 
 ### Gemini API rate limits
 
-Add exponential backoff in `scripts/run_llm_eval.py`. Gemini 3.1 Pro has per-minute QPS limits; reduce concurrency if needed.
+Gemini 3.1 Pro (via OpenRouter) has per-minute QPS limits. Reduce concurrency via `--llm-concurrency 2` on `python -m scripts.validation.main --llm-eval`.
 
 ### LLM outputs vary across runs
 

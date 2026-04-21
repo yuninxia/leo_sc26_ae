@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: Contributors to the HPCToolkit Project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+joblib
+pandas
+tabulate
+scikit-learn
+IPython
+treelib
+ipytree
+hatchet
+thicket

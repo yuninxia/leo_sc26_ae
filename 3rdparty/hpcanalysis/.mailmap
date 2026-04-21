@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: Contributors to the HPCToolkit Project
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# This file maps commit authors (name + email) to more up-to-date (or otherwise more
+# "canonical") author information. The main intention is for patching up situations
+# where a Git commit was merged with invalid author information (e.g. `user@localhost`).
+# It can also be thought of as a record of past contributors. Most Git commands use the
+# mappings listed in this file, see man gitmailmap for more details.
+#
+# To keep management simple, we ask that any new entries are grouped by individual and
+# added in sorted order, where each group starts with the "canonical" name/email pair.
+# Please include a link to an affected commit for each mapping, and if possible to the
+# GitLab account for the individual at the very top of the group.
+
+# https://gitlab.com/draganaurosgrbic
+Dragana Grbic <draganaurosgrbic@gmail.com>
+# https://gitlab.com/hpctoolkit/hpc-analysis/-/commit/2dad51e5a6851fe5591ffbe93ec4550786e5b3ff
+Dragana Grbic <draganaurosgrbic@gmail.com> Dragana Grbic <dg76@rice.edu>
+# https://gitlab.com/hpctoolkit/hpc-analysis/-/commit/677fffa092e650900775fe25008f34410814cdb4
+Dragana Grbic <draganaurosgrbic@gmail.com> Dragana Grbic <dg76@ufront.cs.rice.edu>
+
+# https://gitlab.com/jmellorcrummey
+John Mellor-Crummey <johnmc@rice.edu>
+
+# https://gitlab.com/blue42u
+Jonathon Anderson <anderson.jonathonm@gmail.com>

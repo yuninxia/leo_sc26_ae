@@ -2,7 +2,7 @@
 name = "leo"
 version = "0.1.0"
 description = "GPU Performance Root Cause Analyzer - Python implementation of GPA"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "hpcanalysis",
     "pandas>=2.0.0",
