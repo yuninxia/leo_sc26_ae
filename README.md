@@ -160,7 +160,13 @@ python postprocess.py                 # generate Table IV data
 bash scripts/evaluation/run_workload_rajaperf.sh --kernel MASS3DEA --vendor all
 ```
 
-Optimization patches for each case study are in `benchmarks/*/optimized/`. Diff against `original/` to see the changes.
+Optimization patches for each case study are in `benchmarks/*/optimized/`. To see the changes:
+
+- `rajaperf-h100/` and `xsbench/` — diff `original/` vs `optimized/` directly.
+- `lulesh/` — `fork/omp_4.0/` is the baseline; see `benchmarks/lulesh/README.md`.
+- `kripke/`, `quicksilver/`, `llamacpp/` — the baseline is upstream; each
+  benchmark's top-level `README.md` lists the upstream URL and the patch/file
+  pair that reproduces the Leo-guided change.
 
 ### Task 4: LLM diagnostic study (Table V, optional)
 
