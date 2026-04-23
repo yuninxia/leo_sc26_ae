@@ -150,6 +150,23 @@ if [ -z "$VENDOR" ]; then
     exit 1
 fi
 
+# Warn reviewers: non-universal vendors SSH to the authors' Rice cluster.
+if [ "$VENDOR" != "universal" ]; then
+    cat >&2 <<'WARN'
+################################################################################
+# AE REVIEWER WARNING: this helper SSHes to the authors' Rice University
+# cluster (odyssey / illyad / headroom / gilgamesh / hopper1 / hopper2) for
+# non-'universal' vendors. It is NOT portable to other sites.
+#
+# To build on your own GPU host, use the direct docker command instead:
+#     docker build -f scripts/evaluation/docker/Dockerfile.<workload>-<vendor> \
+#                  -t leo-<workload>-<vendor> .
+#
+# The 'universal' vendor (CPU-only analysis) IS safe for reviewers.
+################################################################################
+WARN
+fi
+
 # Validate workload
 if [ "$BASE_ONLY" = false ]; then
     if ! echo "$VALID_WORKLOADS" | grep -qw "$WORKLOAD"; then

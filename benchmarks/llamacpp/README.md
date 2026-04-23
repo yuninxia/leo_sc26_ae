@@ -40,3 +40,20 @@ git apply /path/to/leo_sc26_ae/benchmarks/llamacpp/optimized/amd_mmq_optimize.pa
 
 Alternatively, `diff optimized/mmq_original.cuh optimized/mmq_amd_optimized.cuh`
 shows the AMD-path changes as a self-contained before/after pair.
+
+## Running (requires model weights)
+
+The paper's llama.cpp measurements use **Qwen2.5-1.5B quantized to Q4_K_M** (~1 GB GGUF
+file). The artifact does not bundle the weights. Reviewers should download from
+Hugging Face before running the harness:
+
+```bash
+# Any GGUF mirror of Qwen2.5-1.5B-Instruct Q4_K_M works; e.g.
+huggingface-cli download Qwen/Qwen2.5-1.5B-Instruct-GGUF \
+    qwen2.5-1.5b-instruct-q4_k_m.gguf \
+    --local-dir /tmp/qwen-weights
+```
+
+Then point the harness scripts (`run_compare_nvidia.sh`, `run_perkernel_amd.sh`) at
+the downloaded GGUF via their `MODEL=` argument or environment variable (see script
+header). License: Qwen2.5 is under the Qwen research license (Apache-2.0-compatible).
