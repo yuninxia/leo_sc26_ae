@@ -67,8 +67,9 @@ def main():
         help="Run LLM semantic evaluation via OpenRouter",
     )
     parser.add_argument(
-        "--llm-model", type=str, default="google/gemini-3.1-pro",
-        help="OpenRouter model ID (default: google/gemini-3.1-pro — matches Table V)",
+        "--llm-model", type=str, default="google/gemini-3.1-pro-preview",
+        help="OpenRouter model ID (default: google/gemini-3.1-pro-preview — matches Table V). "
+             "If this slug is deprecated, pass a current Gemini 3.x slug from https://openrouter.ai/models.",
     )
     parser.add_argument(
         "--llm-concurrency", type=int, default=5,

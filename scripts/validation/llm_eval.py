@@ -240,6 +240,27 @@ def run_llm_eval(
         api_key=api_key,
     )
 
+    # Probe the model slug once up-front; OpenRouter preview slugs (e.g.
+    # google/gemini-3.1-pro-preview) can be retired or renamed. Failing
+    # early with a pointer to the model list saves a full run of 404s.
+    try:
+        client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": "ping"}],
+            max_tokens=1,
+        )
+    except Exception as e:
+        msg = str(e).lower()
+        if "not a valid model" in msg or "model_not_found" in msg or "404" in msg:
+            print(
+                f"ERROR: OpenRouter model '{model}' is not available.\n"
+                f"  List current models: curl https://openrouter.ai/api/v1/models | jq '.data[].id'\n"
+                f"  Pass a current slug via --llm-model (see AE Known Deviations).",
+                file=sys.stderr,
+            )
+            sys.exit(2)
+        # Any other error (network, auth) — let the per-kernel loop surface it.
+
     # Filter to evaluable results (have both Leo data and diff)
     evaluable = [r for r in results if r.leo_stall_text and r.diff_text]
     total = len(evaluable)
