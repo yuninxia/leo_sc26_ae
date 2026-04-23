@@ -63,7 +63,7 @@ Appendix: Artifact Description/Artifact Evaluation
 \subsection{Computational Artifacts}
 
 \begin{description}
-\item[$A_1$] LEO analysis tool and evaluation infrastructure. Zenodo archive: \url{https://doi.org/10.5281/zenodo.19704349} (concept DOI --- always resolves to the latest release; the reviewed snapshot is tag \texttt{v0.1.0-sc26-ae} at \url{https://doi.org/10.5281/zenodo.19704350}).
+\item[$A_1$] LEO analysis tool and evaluation infrastructure. Zenodo archive: \url{https://doi.org/10.5281/zenodo.19704349} (concept DOI --- always resolves to the latest release; the reviewed snapshot is tag \texttt{v0.1.1-sc26-ae} at \url{https://doi.org/10.5281/zenodo.19705193}).
 \end{description}
 
 \begin{center}
@@ -82,6 +82,9 @@ $A_1$   &  $C_1, C_2, C_3$ & Table IV (per-kernel speedups) \\
 \end{tabular}}
 \end{center}
 
+\bigskip
+\noindent\textbf{Badges requested.} We intend to apply for the SC26 badges \emph{Artifacts Available}, \emph{Artifacts Evaluated-Functional}, and \emph{Results Replicated}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Artifact Identification}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,7 +99,7 @@ Artifact $A_1$ contains the LEO analysis tool, Docker-based evaluation infrastru
 
 For each of the 21 workloads on three GPU platforms, LEO should identify the dominant stall chain through backward dependence tracing. Applying the LEO-guided optimization (confined to the code region implicated by the top-ranked chain) should reproduce the per-kernel speedups reported in Table~IV within measurement noise ($\pm$5\% on NVIDIA and AMD; $\pm$9\% on Intel PVC due to higher platform variability).
 The single-dependency coverage (Figure~5) should show improvement from LEO's analysis pipeline on NVIDIA and AMD, with Intel coverage remaining stable due to compiler-verified SWSB edges.
-The LLM diagnostic study (Table~V) evaluates Gemini 3.1 Pro with 5 trials per kernel at temperature 0.7, comparing three diagnostic contexts on 15 RAJAPerf CUDA kernels: code only (C), code plus raw stall counts (C+S), and code plus LEO's structured root-cause analysis (C+L(S)).
+The LLM diagnostic study (Table~V) in the paper evaluates Gemini 3.1 Pro at temperature 0.7 on 15 RAJAPerf CUDA kernels, comparing three diagnostic contexts: code only (C), code plus raw stall counts (C+S), and code plus LEO's structured root-cause analysis (C+L(S)). Table~V's Compilable, Geomean Speedup, and Regressions columns come from a separate compile-and-benchmark harness that requires GPU hardware and is \emph{not} bundled in this artifact. The artifact's \path{--llm-eval} path reproduces the upstream \emph{semantic-match} proxy (does the LLM identify the same root cause that LEO ranks first?), which is what \path{scripts/validation/main.py} implements.
 
 \arttime
 
@@ -138,8 +141,8 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 \item \textbf{RAJAPerf kernels (15):} \texttt{Base\_CUDA}, \texttt{Base\_HIP}, and \texttt{Base\_SYCL} variants with default problem sizes, included in RAJAPerf repository. Kernels: MASS3DEA, LTIMES\_NOVIEW, LTIMES, 3MM, 2MM, GEMM, PRESSURE, ENERGY, FIR, ZONAL\_ACCUM\_3D, VOL3D, DEL\_DOT\_VEC\_2D, DIFFUSION3DPA, CONVECTION3DPA, MASS3DPA.
 \item \textbf{HPC applications (5):} LULESH, miniBUDE, XSBench, Kripke, QuickSilver --- all open-source with default inputs.
 \item \textbf{ML applications (1):} llama.cpp (Qwen2.5-1.5B, Q4\_K\_M quantization).
-\item \textbf{Case study (not in Table~IV):} HipKittens RMSNorm (AMD-only, hand-tuned ML kernel).
-\item \textbf{Pre-collected profiling data:} HPCToolkit measurement databases for all 21 workloads $\times$ 3 vendors, archived in the artifact repository. These enable LEO analysis without access to GPU hardware.
+\item \textbf{Case study:} HipKittens RMSNorm (AMD-only, hand-tuned ML kernel).
+\item \textbf{Pre-collected profiling data:} HPCToolkit measurement databases for all 21 workloads $\times$ 3 vendors, collected with the \path{feature/hidden-stall-metrics} HPCToolkit branch on the same hardware listed above (NVIDIA GH200, AMD MI300A, Intel GPU Max 1100), archived in the artifact repository. These enable LEO analysis without access to GPU hardware.
 \end{itemize}
 
 \artinpart{Installation and Deployment}
@@ -147,7 +150,7 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 \begin{enumerate}
 \item Obtain the artifact: download and extract the tarball from the $A_1$ Zenodo DOI.
 \item Install Python dependencies: \texttt{uv sync} (requires Python 3.11--3.13 and GCC 11+ to build the vendored \texttt{hpcanalysis} C++ extension).
-\item Download pre-collected HPCToolkit profiling data ($\sim$1~GB compressed, $\sim$8.5~GB extracted): \texttt{bash}~\path{scripts/download_data.sh}.
+\item Download pre-collected HPCToolkit profiling data ($\sim$1~GB compressed, $\sim$5.6~GB extracted): \texttt{bash}~\path{scripts/download_data.sh}.
 \item Build the universal analysis container for CPU-only reproduction of Figure~5 and Table~V: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only}. For full GPU-side reproduction of Table~IV, additionally build vendor-specific containers via the same script.
 \end{enumerate}
 
@@ -164,7 +167,7 @@ The evaluation workflow consists of four tasks:
 
 Dependencies: $T_1 \rightarrow T_2 \rightarrow T_4$; $T_1 \rightarrow T_3$. Tasks $T_2$ and $T_3$ can run in parallel after $T_1$ completes.
 
-For pre-collected data (included in artifact), $T_1$ can be skipped entirely, and $T_2$ and $T_4$ can be executed on any x86-64 machine using the universal Docker container without GPU hardware. $T_3$ still requires access to the target GPU to produce fresh speedup measurements; pre-collected timing CSVs in the artifact allow inspection of our baseline numbers without re-running.\footnote{Evaluation parameters: RAJAPerf uses default problem sizes with kernel-specific repetition counts and internal warmup; case-study applications use 10 independent runs per configuration with mean speedup reported; LEO analysis uses \texttt{--top-n 1} for per-kernel and \texttt{--top-n 5} for whole-program.}
+For pre-collected data (included in artifact), $T_1$ can be skipped entirely, and $T_2$ and $T_4$ can be executed on any x86-64 machine using the universal Docker container without GPU hardware. $T_3$ still requires access to the target GPU to produce fresh speedup measurements; pre-collected timing CSVs in the artifact allow inspection of our baseline numbers without re-running.\footnote{Evaluation parameters: RAJAPerf uses default problem sizes with kernel-specific repetition counts and internal warmup. Case-study applications use 10 independent runs per configuration with mean speedup reported. LEO analysis uses \texttt{--top-n 1} for per-kernel and \texttt{--top-n 5} for whole-program.}
 
 \artout
 
@@ -186,9 +189,9 @@ Raw experimental results are processed by:
 Reviewer-facing setup assumes a fresh x86-64 Linux machine with Docker and network access. The four-step enumerate below mirrors \S~Artifact Setup $\to$ Installation and Deployment in the AD; it is duplicated here so reviewers can execute the AE section standalone.
 
 \begin{enumerate}
-\item Obtain the artifact: download the tarball from the $A_1$ Zenodo DOI (see the AD overview above) and extract it, e.g.\ into \path{~/leo_sc26_ae}.
-\item Install Python dependencies: \texttt{uv sync} (Python 3.11--3.13; on RHEL~8, prefix with \texttt{scl enable gcc-toolset-11 --} because the vendored \texttt{hpcanalysis} C++ extension requires GCC~11+).
-\item Download pre-collected profiling data: \texttt{bash}~\path{scripts/download_data.sh} ($\sim$1~GB compressed, $\sim$8.5~GB extracted under \texttt{results/}).
+\item Obtain the artifact: download the tarball from \url{https://doi.org/10.5281/zenodo.19704349} (concept DOI; always resolves to the latest release) and extract it, e.g.\ into \path{~/leo_sc26_ae}.
+\item Install \texttt{uv} if not already present: \url{https://astral.sh/uv/install.sh} (shell-install script). Then install Python dependencies: \texttt{uv sync} (Python 3.11--3.13; on RHEL~8, prefix with \texttt{scl enable gcc-toolset-11 --} because the vendored \texttt{hpcanalysis} C++ extension requires GCC~11+).
+\item Download pre-collected profiling data: \texttt{bash}~\path{scripts/download_data.sh} ($\sim$1~GB compressed, $\sim$5.6~GB extracted under \texttt{results/}).
 \item Build the universal analysis container: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only} ($\sim$20~min one-time; produces the \texttt{leo-base-universal} image used for Figure~5 and Table~V reproduction).
 \end{enumerate}
 
@@ -196,11 +199,15 @@ Total setup: approximately 30 minutes of wall-clock time.
 
 \textbf{Environment variables.} Only Table~V reproduction requires one: \path{OPENROUTER_API_KEY} (obtain from \url{https://openrouter.ai}). Figure~5 and Table~IV have no env-var dependencies.
 
-\textbf{GPU prerequisites.} Table~IV and the Section~VI case studies additionally require per-vendor Docker images \path{leo-rajaperf-{nvidia,amd,intel}}, built via \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{<vendor> --workload rajaperf} on a host with the target GPU. Figure~5 and Table~V reproduce without any GPU.
+\textbf{GPU prerequisites.} Table~IV and the Section~VI case studies require per-vendor Docker images \path{leo-rajaperf-{nvidia,amd,intel}}. Reviewers on their own GPU host should build these directly: \texttt{docker build -f}~\path{scripts/evaluation/docker/Dockerfile.rajaperf-<vendor>}~\texttt{-t}~\path{leo-rajaperf-<vendor>}~\texttt{.} from the artifact root. The helper \path{scripts/evaluation/build_containers.sh <vendor> --workload rajaperf} is an authors'-side convenience that SSHes to our Rice cluster (hostnames \texttt{odyssey}, \texttt{illyad}, \texttt{headroom}) and is \emph{not} portable to other sites; reviewers should skip it. Figure~5 and Table~V reproduce without any GPU.
+
+\textbf{Network egress required:} \path{pypi.org} and \path{pypi.nvidia.com} (step 2 dependency install); \path{github.com} or \path{zenodo.org} (step 3 data download); \path{openrouter.ai} (Table~V only). Firewall-restricted sites should pre-request exceptions.
+
+\textbf{Third-party licenses.} Benchmarks under \path{benchmarks/} retain their upstream licenses (see \path{benchmarks/*/LICENSE} in the artifact); the LEO analysis code itself is released under Apache License 2.0.
 
 \artcomp
 
-The evaluation is organized by paper element (Figure~5, Table~IV, Table~V, Section~VI case studies) rather than by the hardware-focused pipeline stages $T_1$--$T_4$ described in the AD. All reproduction paths here rely on the pre-collected profiling data shipped with the artifact, so the $T_1$ (Profile) stage is skipped; see \S~AD $\to$ Artifact Execution for the full end-to-end pipeline if fresh profiling on GPU hardware is desired. Figure~5 and Table~V are CPU-only and fully independent; Table~IV and the Section~VI case studies share per-vendor Docker images and may run in parallel across GPU hosts.
+All reproduction paths rely on the pre-collected profiling data shipped with the artifact, so profiling ($T_1$) is skipped; see the AD for the full end-to-end pipeline if fresh GPU profiling is desired. Figure~5 and Table~V are CPU-only and fully independent; Table~IV and the Section~VI case studies share per-vendor Docker images and may run in parallel across GPU hosts.
 
 \begin{table*}[t]
 \centering
@@ -221,9 +228,10 @@ Table~V (LLM diagnostics)      & \texttt{python -m scripts.validation.main --llm
 
 \textbf{Known Deviations.} Before executing the commands below, note the following non-determinism caveats and tolerance windows:
 \begin{itemize}
-\item \textbf{Pre-collected profile timestamps.} HPCToolkit databases in the artifact archive carry the original collection timestamps; LEO's analysis output is deterministic and identical to a fresh profile of the same binary.
+\item \textbf{Determinism.} LEO output is byte-identical across repeated runs on the same measurement database; archived HPCToolkit timestamps are historical and do not affect analysis results.
 \item \textbf{Intel PVC variability.} Runtime noise on GPU Max~1100 is higher than on NVIDIA/AMD (median CV $\sim$9\%). Use the $\pm$9\% tolerance when comparing Table~IV Intel speedups.
-\item \textbf{LLM sampling variance.} Table~V results are non-deterministic at temperature~0.7. Individual kernel speedups vary run-to-run; the relative ranking of C vs.\ C+S vs.\ C+L(S) and the aggregate 1.29$\times$ geomean / 100\% compile rate for C+L(S) remain stable within LLM sampling noise across 5 trials.
+\item \textbf{Minimum reproduction target.} Reviewers with access to a single vendor fit inside SC26's 8-hour AE budget and can earn \emph{Results Replicated} credit on that vendor: NVIDIA GH200 or AMD MI300A alone reproduces all 21 rows of Table~IV for that column in $\sim$2--4~h; Intel PVC reproduces 18 rows (Kripke, llama.cpp, QuickSilver lack SYCL ports and are marked N/A). Per-vendor runs are independent; multi-vendor reproduction is parallelizable across separate GPU hosts.
+\item \textbf{LLM sampling variance.} The semantic-match proxy produced by \path{--llm-eval} is non-deterministic at temperature~0.7; repeated invocations may differ per-kernel, but the relative ranking of C vs.\ C+S vs.\ C+L(S) is stable. The paper's Compilable / Geomean Speedup / Regressions columns come from a separate compile-and-benchmark harness (not bundled); this artifact does not reproduce those numbers.
 \end{itemize}
 
 \textbf{Figure~5 --- SDC coverage (CPU-only, $\sim$5--10~min).}
@@ -243,8 +251,9 @@ Export \path{OPENROUTER_API_KEY}; run \path{uv run python -m scripts.validation.
 \begin{itemize}
 \item \textbf{Figure~5:} \path{scripts/plot_sdc_paper.py} consumes the CSV from the Figure~5 reproduction and produces the grouped bar chart as printed in the paper. Expected NVIDIA coverage: 30\%--74\% before pruning, 64\%--94\% after; AMD and Intel ranges documented in the artifact README.
 \item \textbf{Table~IV:} \path{benchmarks/rajaperf-h100/postprocess.py} emits a per-kernel speedup CSV and per-vendor geometric means. Tolerance: $\pm$5\% on NVIDIA~GH200 and AMD~MI300A (median CV below 1\%); $\pm$9\% on Intel~PVC (median CV $\sim$9\% due to platform variability).
-\item \textbf{Table~V:} \path{--llm-eval} prints compile-rate and geometric-mean speedup rows to stdout; \path{--llm-log} captures raw LLM responses. The 1.29$\times$ geomean and 100\% compile rate under context C+L(S) should hold within LLM sampling variance; individual-kernel speedups vary.
+\item \textbf{Table~V (semantic-match proxy only):} \path{--llm-eval} prints per-kernel scores with confidence levels (Low/Medium/High) and a summary line with average score, high-confidence count, and evaluated-vs-total fractions; \path{--llm-log} captures raw LLM responses. Reproducing Table~V's Compilable / Speedup / Regressions columns requires the separate compile-and-benchmark harness (not bundled).
 \item \textbf{Case studies (Section~VI):} qualitative; each per-benchmark \texttt{README.md} plus the diff between \texttt{original/} and \texttt{optimized/} (or upstream commit and patch pair, where applicable) documents the LEO-guided change.
+\item \textbf{Troubleshooting:} see \path{docs/TROUBLESHOOTING.md} in the artifact for common issues (HPCToolkit build, Docker vendor bases, GPU drivers, GTPin).
 \end{itemize}
 
 \end{document}

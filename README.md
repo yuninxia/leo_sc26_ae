@@ -145,9 +145,9 @@ Per-vendor measurement of original vs. optimized kernels for Table IV.
 
 ```bash
 cd benchmarks/rajaperf-h100
-bash run_compare.sh --vendor nvidia   # on GH200
-bash run_compare.sh --vendor amd      # on MI300A
-bash run_compare.sh --vendor intel    # on GPU Max 1100
+bash scripts/evaluation/run_workload_rajaperf.sh --vendor nvidia   # on GH200
+bash scripts/evaluation/run_workload_rajaperf.sh --vendor amd      # on MI300A
+bash scripts/evaluation/run_workload_rajaperf.sh --vendor intel    # on GPU Max 1100
 python postprocess.py                 # generate Table IV data
 ```
 
