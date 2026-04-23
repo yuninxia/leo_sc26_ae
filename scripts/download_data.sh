@@ -12,7 +12,10 @@ RELEASE_TAG="v1.0-sc26-data"
 GH_REPO="yuninxia/leo_sc26_ae"
 GH_URL="https://github.com/${GH_REPO}/releases/download/${RELEASE_TAG}/${TARBALL}"
 
-# Optional Zenodo mirror (set ZENODO_URL env var or edit below once DOI is assigned)
+# Optional Zenodo archival mirror for the measurement tarball. The Zenodo source
+# archive (DOI 10.5281/zenodo.19704349) contains only the repo snapshot, not the
+# ~1 GB measurements; if a separate Zenodo data deposit is made later, set
+# ZENODO_URL (or edit here) to the direct file URL.
 ZENODO_URL="${ZENODO_URL:-}"
 
 if [ -d "${DATA_DIR}/per-kernel" ] && [ -n "$(ls -A "${DATA_DIR}/per-kernel" 2>/dev/null)" ]; then
@@ -68,7 +71,7 @@ if [ "$ok" -ne 1 ]; then
 fi
 
 echo ""
-echo "Extracting ~1.9 GB to ${DATA_DIR} ..."
+echo "Extracting ~5.6 GB to ${DATA_DIR} ..."
 tar -xzf "${TMP}" -C "${LEO_ROOT}" --strip-components=0
 rm -f "${TMP}"
 

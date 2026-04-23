@@ -67,8 +67,8 @@ def main():
         help="Run LLM semantic evaluation via OpenRouter",
     )
     parser.add_argument(
-        "--llm-model", type=str, default="minimax/minimax-m2.5",
-        help="OpenRouter model ID (default: minimax/minimax-m2.5)",
+        "--llm-model", type=str, default="google/gemini-3.1-pro",
+        help="OpenRouter model ID (default: google/gemini-3.1-pro — matches Table V)",
     )
     parser.add_argument(
         "--llm-concurrency", type=int, default=5,

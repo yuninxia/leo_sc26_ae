@@ -60,7 +60,7 @@ See `docs/HARDWARE_SETUP.md` for vendor-specific details.
 
 ### Pre-collected Profiling Data (GitHub Release)
 
-No GPU needed for LEO analysis — one command downloads all pre-collected measurements (~1 GB compressed, ~8.5 GB extracted):
+No GPU needed for LEO analysis — one command downloads all pre-collected measurements (~1 GB compressed, ~5.6 GB extracted):
 
 ```bash
 bash scripts/download_data.sh
@@ -68,7 +68,7 @@ bash scripts/download_data.sh
 
 This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `time_analysis.sh`) run without GPU hardware.
 
-A Zenodo mirror is also available for archival citation (DOI: TBD).
+A Zenodo mirror is also available for archival citation: concept DOI [10.5281/zenodo.19704349](https://doi.org/10.5281/zenodo.19704349) (always resolves to the latest release). The Zenodo record archives the repository snapshot; the ~1 GB measurement tarball currently lives on the GitHub Release `v1.0-sc26-data`. If the GitHub URL is unreachable (e.g., the repository is temporarily private), set `ZENODO_URL=<direct-file-url>` to point `download_data.sh` at a mirror.
 
 ### LLM API (optional, Table V only)
 
@@ -87,7 +87,7 @@ cd leo_sc26_ae
 curl -LsSf https://astral.sh/uv/install.sh | sh  # if uv not installed
 uv sync
 
-# 3. Download pre-collected profiling data (~1 GB download, ~8.5 GB extracted)
+# 3. Download pre-collected profiling data (~1 GB download, ~5.6 GB extracted)
 bash scripts/download_data.sh
 
 # 4. Build the universal analysis Docker image (~20 min one-time)

@@ -9,7 +9,27 @@
 
 \usepackage{hyperref}
 
+\usepackage{microtype}
+\setlength{\emergencystretch}{3em}
+\Urlmuskip=0mu plus 1mu\relax
+\hypersetup{hypertexnames=false}
+\hbadness=10000
+\vbadness=10000
+\raggedbottom
+
 \usepackage{sc26repro}
+
+% PDF-string-safe artifact headings
+\renewcommand{\newartifact}{%
+    \stepcounter{artifactCounter}%
+    \subsection{Computational Artifact
+        \texorpdfstring{$A_{\theartifactCounter}$}{A\theartifactCounter}}%
+}
+\renewcommand{\arteval}[1]{%
+    \setcounter{artifactCounter}{#1}%
+    \subsection{Computational Artifact
+        \texorpdfstring{$A_{#1}$}{A#1}}%
+}
 
 % Comment these for final submission:
 %\usetag{explanation}
@@ -43,10 +63,11 @@ Appendix: Artifact Description/Artifact Evaluation
 \subsection{Computational Artifacts}
 
 \begin{description}
-\item[$A_1$] LEO analysis tool and evaluation infrastructure (private repository; public DOI will be created upon acceptance).
+\item[$A_1$] LEO analysis tool and evaluation infrastructure. Zenodo archive: \url{https://doi.org/10.5281/zenodo.19704349} (concept DOI --- always resolves to the latest release; the reviewed snapshot is tag \texttt{v0.1.0-sc26-ae} at \url{https://doi.org/10.5281/zenodo.19704350}).
 \end{description}
 
 \begin{center}
+{\setlength{\tabcolsep}{3pt}
 \begin{tabular}{rll}
 \toprule
 Artifact ID  &  Contributions &  Related \\
@@ -58,7 +79,7 @@ $A_1$   &  $C_1, C_2, C_3$ & Table IV (per-kernel speedups) \\
         &                   & Figure 5 (SDC coverage) \\
         &                   & Case studies (Sec.~VI) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,16 +94,16 @@ Artifact $A_1$ contains the LEO analysis tool, Docker-based evaluation infrastru
 
 \artexp
 
-For each of the 21 workloads on three GPU platforms, LEO should identify the dominant stall chain through backward dependence tracing. Applying the LEO-guided optimization (confined to the code region implicated by the top-ranked chain) should reproduce the per-kernel speedups reported in Table~IV within measurement noise ($\pm$5\% on NVIDIA/AMD, up to $\pm$9\% on Intel PVC due to higher platform variability).
+For each of the 21 workloads on three GPU platforms, LEO should identify the dominant stall chain through backward dependence tracing. Applying the LEO-guided optimization (confined to the code region implicated by the top-ranked chain) should reproduce the per-kernel speedups reported in Table~IV within measurement noise ($\pm$5\% on NVIDIA and AMD; $\pm$9\% on Intel PVC due to higher platform variability).
 The single-dependency coverage (Figure~5) should show improvement from LEO's analysis pipeline on NVIDIA and AMD, with Intel coverage remaining stable due to compiler-verified SWSB edges.
-The LLM diagnostic study (Table~V) evaluates Gemini 3.1 Pro on 15 RAJAPerf CUDA kernels ($k{=}5$ trials, temperature 0.7), comparing three diagnostic contexts: code only (C), code plus raw stall counts (C+S), and code plus LEO's structured root-cause analysis (C+L(S)).
+The LLM diagnostic study (Table~V) evaluates Gemini 3.1 Pro with 5 trials per kernel at temperature 0.7, comparing three diagnostic contexts on 15 RAJAPerf CUDA kernels: code only (C), code plus raw stall counts (C+S), and code plus LEO's structured root-cause analysis (C+L(S)).
 
 \arttime
 
 \begin{itemize}
-\item \textbf{Artifact Setup:} 30--60 min (Docker image build per vendor).
-\item \textbf{Artifact Execution:} 2--4 hours total (profiling + LEO analysis across 21 workloads $\times$ 3 vendors; benchmarking original vs.\ optimized kernels).
-\item \textbf{Artifact Analysis:} 15 min (SDC collection script, speedup comparison scripts).
+\item \textbf{Artifact Setup:} 30--60 min (universal image + per-vendor container builds).
+\item \textbf{Artifact Execution:} 2--4 hours per vendor for Table~IV (benchmarking original vs.\ optimized kernels on the target GPU); Figure~5 and Table~V run CPU-only in $\sim$30 min combined. Per-vendor runs are independent and parallelizable across hosts.
+\item \textbf{Artifact Analysis:} 15 min (SDC collection + speedup comparison scripts).
 \end{itemize}
 
 \artin
@@ -100,13 +121,13 @@ Partial reproduction on a single vendor is possible; the evaluation scripts supp
 \artinpart{Software}
 
 \begin{itemize}
-\item \textbf{LEO} (Python 3.11+, uses \texttt{uv} package manager): \url{https://github.com/yuninxia/leo} (private; public upon acceptance)
-\item \textbf{HPCToolkit} (branch \texttt{feature/hidden-stall-metrics}): \url{https://gitlab.com/yuningxia/hpctoolkit.git}
-\item \textbf{hpcanalysis} (C++ database reader with pybind11): included as git submodule
+\item \textbf{LEO} (Python 3.11--3.13, uses \texttt{uv} package manager): bundled in the $A_1$ Zenodo archive; development mirror linked from the Zenodo record metadata.
+\item \textbf{HPCToolkit} (branch \path{feature/hidden-stall-metrics}): cloned by the Dockerfiles inside the $A_1$ archive during container build.
+\item \textbf{hpcanalysis} (C++ database reader with pybind11): vendored at \path{3rdparty/hpcanalysis/} inside the $A_1$ archive.
 \item \textbf{RAJAPerf} v2024.07.0: \url{https://github.com/LLNL/RAJAPerf}
 \item \textbf{Docker} 24.0+: all evaluation runs inside vendor-specific containers
 \item \textbf{nvdisasm} (CUDA Toolkit), \textbf{llvm-objdump} (ROCm), \textbf{GED} (Intel GTPin 4.5.0): GPU disassemblers, included in Docker images
-\item \textbf{Gemini 3.1 Pro API} (Google Cloud): required only for Table~V reproduction. Needs internet connectivity and valid API credentials. Table~IV and Figure~5 do not require LLM access.
+\item \textbf{Gemini 3.1 Pro via OpenRouter} (\url{https://openrouter.ai}): required only for Table~V reproduction. Needs internet connectivity and a valid \path{OPENROUTER_API_KEY}. Table~IV and Figure~5 do not require LLM access.
 \end{itemize}
 
 \artinpart{Datasets / Inputs}
@@ -115,8 +136,8 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 
 \begin{itemize}
 \item \textbf{RAJAPerf kernels (15):} \texttt{Base\_CUDA}, \texttt{Base\_HIP}, and \texttt{Base\_SYCL} variants with default problem sizes, included in RAJAPerf repository. Kernels: MASS3DEA, LTIMES\_NOVIEW, LTIMES, 3MM, 2MM, GEMM, PRESSURE, ENERGY, FIR, ZONAL\_ACCUM\_3D, VOL3D, DEL\_DOT\_VEC\_2D, DIFFUSION3DPA, CONVECTION3DPA, MASS3DPA.
-\item \textbf{HPC applications (4):} LULESH, miniBUDE, XSBench, Kripke --- all open-source with default inputs.
-\item \textbf{ML applications (2):} llama.cpp (Qwen2.5-1.5B, Q4\_K\_M quantization), QuickSilver.
+\item \textbf{HPC applications (5):} LULESH, miniBUDE, XSBench, Kripke, QuickSilver --- all open-source with default inputs.
+\item \textbf{ML applications (1):} llama.cpp (Qwen2.5-1.5B, Q4\_K\_M quantization).
 \item \textbf{Case study (not in Table~IV):} HipKittens RMSNorm (AMD-only, hand-tuned ML kernel).
 \item \textbf{Pre-collected profiling data:} HPCToolkit measurement databases for all 21 workloads $\times$ 3 vendors, archived in the artifact repository. These enable LEO analysis without access to GPU hardware.
 \end{itemize}
@@ -124,10 +145,10 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 \artinpart{Installation and Deployment}
 
 \begin{enumerate}
-\item Clone LEO repository with submodules: \texttt{git clone --recursive}
-\item Install Python dependencies: \texttt{uv sync}
-\item Build Docker images (one per vendor): \texttt{bash scripts/evaluation/build\_containers.sh}
-\item Alternatively, use the universal analysis container (\texttt{leo-base-universal}) for LEO-only analysis on pre-collected data (no GPU required).
+\item Obtain the artifact: download and extract the tarball from the $A_1$ Zenodo DOI.
+\item Install Python dependencies: \texttt{uv sync} (requires Python 3.11--3.13 and GCC 11+ to build the vendored \texttt{hpcanalysis} C++ extension).
+\item Download pre-collected HPCToolkit profiling data ($\sim$1~GB compressed, $\sim$8.5~GB extracted): \texttt{bash}~\path{scripts/download_data.sh}.
+\item Build the universal analysis container for CPU-only reproduction of Figure~5 and Table~V: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only}. For full GPU-side reproduction of Table~IV, additionally build vendor-specific containers via the same script.
 \end{enumerate}
 
 \artcomp
@@ -136,30 +157,94 @@ The evaluation workflow consists of four tasks:
 
 \begin{description}
 \item[$T_1$: Profile] Run \texttt{hpcrun} with PC sampling on each workload inside vendor-specific Docker containers. Output: HPCToolkit measurement databases.
-\item[$T_2$: Analyze] Run LEO (\texttt{scripts/analyze\_benchmark.py}) on each measurement database. Output: ranked stall chains, dependency graphs, SDC metrics.
-\item[$T_3$: Benchmark] Run original vs.\ optimized kernels (\texttt{benchmarks/rajaperf-h100/run\_compare.sh}). Output: per-kernel speedup measurements.
-\item[$T_4$: Collect] Run collection scripts (\texttt{scripts/collect\_sdc.sh}, \texttt{scripts/time\_analysis.sh}). Output: SDC coverage data (Figure~5), analysis timing data.
+\item[$T_2$: Analyze] Run LEO (\path{scripts/analyze_benchmark.py}) on each measurement database. Output: ranked stall chains, dependency graphs, SDC metrics.
+\item[$T_3$: Benchmark] Run original vs.\ optimized kernels (\path{benchmarks/rajaperf-h100/run_compare.sh}). Output: per-kernel speedup measurements.
+\item[$T_4$: Collect] Run collection scripts (\path{scripts/collect_sdc.sh}, \path{scripts/time_analysis.sh}). Output: SDC coverage data (Figure~5), analysis timing data.
 \end{description}
 
-Dependencies: $T_1 \rightarrow T_2 \rightarrow T_4$; $T_1 \rightarrow T_3$. Tasks $T_2$ and $T_3$ can run in parallel after $T_1$.
+Dependencies: $T_1 \rightarrow T_2 \rightarrow T_4$; $T_1 \rightarrow T_3$. Tasks $T_2$ and $T_3$ can run in parallel after $T_1$ completes.
 
-For pre-collected data (included in artifact), $T_1$ can be skipped entirely, and $T_2$--$T_4$ can be executed on any x86-64 machine using the universal Docker container without GPU hardware.
-
-\textbf{Parameters:}
-\begin{itemize}
-\item RAJAPerf: default problem sizes, kernel-specific repetition counts with internal warmup.
-\item Case study applications: 10 independent runs per configuration, mean speedup reported.
-\item LEO analysis: \texttt{--top-n 1} for per-kernel analysis, \texttt{--top-n 5} for whole-program analysis.
-\end{itemize}
+For pre-collected data (included in artifact), $T_1$ can be skipped entirely, and $T_2$ and $T_4$ can be executed on any x86-64 machine using the universal Docker container without GPU hardware. $T_3$ still requires access to the target GPU to produce fresh speedup measurements; pre-collected timing CSVs in the artifact allow inspection of our baseline numbers without re-running.\footnote{Evaluation parameters: RAJAPerf uses default problem sizes with kernel-specific repetition counts and internal warmup; case-study applications use 10 independent runs per configuration with mean speedup reported; LEO analysis uses \texttt{--top-n 1} for per-kernel and \texttt{--top-n 5} for whole-program.}
 
 \artout
 
 Raw experimental results are processed by:
 \begin{enumerate}
-\item \texttt{scripts/collect\_sdc.py}: Extracts per-kernel SDC values from LEO output, generates the data for Figure~5.
-\item \texttt{scripts/plot\_sdc\_paper.py}: Produces Figure~5 (SDC coverage chart) from collected data.
-\item \texttt{benchmarks/rajaperf-h100/postprocess.py}: Computes speedup ratios from raw timing CSV files for Table~IV.
-\item \texttt{scripts/dump\_paper.py}: Generates a full-text markdown dump for review.
+\item \path{scripts/collect_sdc.py}: Extracts per-kernel SDC values from LEO output, generates the data for Figure~5.
+\item \path{scripts/plot_sdc_paper.py}: Produces Figure~5 (SDC coverage chart) from collected data.
+\item \path{benchmarks/rajaperf-h100/postprocess.py}: Computes speedup ratios from raw timing CSV files for Table~IV.
+\item \path{scripts/dump_paper.py}: Generates a full-text markdown dump for review.
 \end{enumerate}
+
+\newpage
+\appendixAE
+
+\arteval{1}
+
+\artin
+
+Reviewer-facing setup assumes a fresh x86-64 Linux machine with Docker and network access. The four-step enumerate below mirrors \S~Artifact Setup $\to$ Installation and Deployment in the AD; it is duplicated here so reviewers can execute the AE section standalone.
+
+\begin{enumerate}
+\item Obtain the artifact: download the tarball from the $A_1$ Zenodo DOI (see the AD overview above) and extract it, e.g.\ into \path{~/leo_sc26_ae}.
+\item Install Python dependencies: \texttt{uv sync} (Python 3.11--3.13; on RHEL~8, prefix with \texttt{scl enable gcc-toolset-11 --} because the vendored \texttt{hpcanalysis} C++ extension requires GCC~11+).
+\item Download pre-collected profiling data: \texttt{bash}~\path{scripts/download_data.sh} ($\sim$1~GB compressed, $\sim$8.5~GB extracted under \texttt{results/}).
+\item Build the universal analysis container: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only} ($\sim$20~min one-time; produces the \texttt{leo-base-universal} image used for Figure~5 and Table~V reproduction).
+\end{enumerate}
+
+Total setup: approximately 30 minutes of wall-clock time.
+
+\textbf{Environment variables.} Only Table~V reproduction requires one: \path{OPENROUTER_API_KEY} (obtain from \url{https://openrouter.ai}). Figure~5 and Table~IV have no env-var dependencies.
+
+\textbf{GPU prerequisites.} Table~IV and the Section~VI case studies additionally require per-vendor Docker images \path{leo-rajaperf-{nvidia,amd,intel}}, built via \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{<vendor> --workload rajaperf} on a host with the target GPU. Figure~5 and Table~V reproduce without any GPU.
+
+\artcomp
+
+The evaluation is organized by paper element (Figure~5, Table~IV, Table~V, Section~VI case studies) rather than by the hardware-focused pipeline stages $T_1$--$T_4$ described in the AD. All reproduction paths here rely on the pre-collected profiling data shipped with the artifact, so the $T_1$ (Profile) stage is skipped; see \S~AD $\to$ Artifact Execution for the full end-to-end pipeline if fresh profiling on GPU hardware is desired. Figure~5 and Table~V are CPU-only and fully independent; Table~IV and the Section~VI case studies share per-vendor Docker images and may run in parallel across GPU hosts.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}llc@{}}
+\toprule
+Paper element & Entry point & Wall-clock \\
+\midrule
+Figure~5 (SDC coverage)       & \path{scripts/collect_sdc.sh}                         & 5--10 min (CPU only) \\
+Table~IV (per-kernel speedups) & \path{scripts/evaluation/run_workload_rajaperf.sh}    & 2--4 h per vendor (GPU) \\
+Section~VI case studies        & \path{benchmarks/<name>/run_compare.sh}               & per-benchmark (GPU) \\
+Table~V (LLM diagnostics)      & \texttt{python -m scripts.validation.main --llm-eval} & 10--20 min (CPU only) \\
+\bottomrule
+\end{tabular}
+\caption{AE reproduction map: each paper element, its entry-point script, and expected wall-clock on a single host.}
+\label{tab:ae-map}
+\end{table*}
+
+\textbf{Known Deviations.} Before executing the commands below, note the following non-determinism caveats and tolerance windows:
+\begin{itemize}
+\item \textbf{Pre-collected profile timestamps.} HPCToolkit databases in the artifact archive carry the original collection timestamps; LEO's analysis output is deterministic and identical to a fresh profile of the same binary.
+\item \textbf{Intel PVC variability.} Runtime noise on GPU Max~1100 is higher than on NVIDIA/AMD (median CV $\sim$9\%). Use the $\pm$9\% tolerance when comparing Table~IV Intel speedups.
+\item \textbf{LLM sampling variance.} Table~V results are non-deterministic at temperature~0.7. Individual kernel speedups vary run-to-run; the relative ranking of C vs.\ C+S vs.\ C+L(S) and the aggregate 1.29$\times$ geomean / 100\% compile rate for C+L(S) remain stable within LLM sampling noise across 5 trials.
+\end{itemize}
+
+\textbf{Figure~5 --- SDC coverage (CPU-only, $\sim$5--10~min).}
+Run \texttt{bash}~\path{scripts/collect_sdc.sh}. LEO analyzes pre-collected HPCToolkit databases and streams per-kernel SDC (before/after LEO pruning) to stdout; output consumed by \path{scripts/plot_sdc_paper.py}.
+
+\textbf{Table~IV --- per-kernel speedups (requires GPU, $\sim$2--4~h per vendor).}
+Run \texttt{bash}~\path{scripts/evaluation/run_workload_rajaperf.sh}~\texttt{--kernel <K> --vendor <V>} (\texttt{<V>} $\in$ \texttt{\{nvidia,~amd,~intel,~all\}}); compute speedups via \texttt{cd}~\path{benchmarks/rajaperf-h100}~\texttt{\&\& python postprocess.py}.
+
+\textbf{Section~VI case studies (requires GPU).}
+RAJAPerf-tree kernels reuse the Table~IV entry point. Out-of-tree benchmarks (miniBUDE, llama.cpp, Kripke, QuickSilver, HipKittens) live under \path{benchmarks/<name>/}; each directory's \texttt{README.md} documents the upstream commit SHA, the LEO-guided diff, and the \texttt{run\_compare.sh} entry point.
+
+\textbf{Table~V --- LLM diagnostic study (CPU-only, $\sim$10--20~min, optional).}
+Export \path{OPENROUTER_API_KEY}; run \path{uv run python -m scripts.validation.main --llm-eval --llm-model google/gemini-3.1-pro --llm-log results/llm_eval.log}. Pre-collected LLM outputs are in \texttt{results/}; lower \path{--llm-concurrency} (default~5) if rate-limited.
+
+\artout
+
+\begin{itemize}
+\item \textbf{Figure~5:} \path{scripts/plot_sdc_paper.py} consumes the CSV from the Figure~5 reproduction and produces the grouped bar chart as printed in the paper. Expected NVIDIA coverage: 30\%--74\% before pruning, 64\%--94\% after; AMD and Intel ranges documented in the artifact README.
+\item \textbf{Table~IV:} \path{benchmarks/rajaperf-h100/postprocess.py} emits a per-kernel speedup CSV and per-vendor geometric means. Tolerance: $\pm$5\% on NVIDIA~GH200 and AMD~MI300A (median CV below 1\%); $\pm$9\% on Intel~PVC (median CV $\sim$9\% due to platform variability).
+\item \textbf{Table~V:} \path{--llm-eval} prints compile-rate and geometric-mean speedup rows to stdout; \path{--llm-log} captures raw LLM responses. The 1.29$\times$ geomean and 100\% compile rate under context C+L(S) should hold within LLM sampling variance; individual-kernel speedups vary.
+\item \textbf{Case studies (Section~VI):} qualitative; each per-benchmark \texttt{README.md} plus the diff between \texttt{original/} and \texttt{optimized/} (or upstream commit and patch pair, where applicable) documents the LEO-guided change.
+\end{itemize}
 
 \end{document}

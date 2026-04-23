@@ -1,11 +1,43 @@
 #!/bin/bash
 # Collect per-kernel Single Dependency Coverage for all Table IV workloads
 # Usage: bash scripts/collect_sdc.sh
+set -euo pipefail
 
 # Paths — override via env vars as needed
 LEO="${LEO_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 R="${RESULTS_DIR:-$LEO/results}"
 PK="${PER_KERNEL_DIR:-$R/per-kernel}"
+
+# Measurement directories (must exist; created by scripts/download_data.sh)
+MEASUREMENT_DIRS=(
+  "nvidia-gilgamesh-minibude-20260222-174228"
+  "amd-minibude-20260220-151739"
+  "intel-minibude-20260222-163954"
+  "nvidia-gilgamesh-xsbench-20260222-182940"
+  "amd-xsbench-20260220-175339"
+  "intel-xsbench-20260218-134304"
+  "nvidia-gilgamesh-lulesh-20260222-190913"
+  "amd-lulesh-20260220-190435"
+  "intel-lulesh-20260218-153334"
+  "nvidia-gilgamesh-quicksilver-20260219-115644"
+  "amd-quicksilver-20260322-165227"
+  "nvidia-gilgamesh-llamacpp-20260325-131430"
+  "amd-llamacpp-20260325-131416"
+  "nvidia-gilgamesh-kripke-20260325-141654"
+  "amd-kripke-20260325-141150"
+)
+
+# Preflight: fail loudly if download_data.sh hasn't produced the expected layout.
+missing=()
+[ -d "$PK" ] || missing+=("$PK")
+for d in "${MEASUREMENT_DIRS[@]}"; do
+  [ -d "$R/$d" ] || missing+=("$R/$d")
+done
+if [ "${#missing[@]}" -gt 0 ]; then
+  echo "ERROR: expected measurement directories are missing. Run scripts/download_data.sh first." >&2
+  printf '  - %s\n' "${missing[@]}" >&2
+  exit 1
+fi
 
 docker run --rm \
   -v "$LEO/src/leo:/opt/leo/src/leo:ro" \
