@@ -11,7 +11,11 @@
 #   bash scripts/evaluation/run_workload_rajaperf.sh --help
 #
 # Prerequisites: the vendor-specific Docker image (leo-rajaperf-<vendor>) must exist.
-# Build with:  bash scripts/evaluation/build_containers.sh rajaperf-<vendor>
+# Portable build (any GPU host):
+#     docker build -f scripts/evaluation/docker/Dockerfile.rajaperf-<vendor> \
+#                  -t leo-rajaperf-<vendor> .
+# Or authors'-side SSH helper (Rice cluster only):
+#     bash scripts/evaluation/build_containers.sh <vendor> --workload rajaperf
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
