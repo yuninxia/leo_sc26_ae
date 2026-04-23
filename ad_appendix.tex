@@ -210,6 +210,8 @@ Total setup: approximately 30 minutes of wall-clock time.
 All reproduction paths rely on the pre-collected profiling data shipped with the artifact, so profiling ($T_1$) is skipped; see the AD for the full end-to-end pipeline if fresh GPU profiling is desired. Figure~5 and Table~V are CPU-only and fully independent; Table~IV and the Section~VI case studies share per-vendor Docker images and may run in parallel across GPU hosts.
 
 \begin{table*}[t]
+\caption{AE reproduction map: each paper element, its entry-point script, and expected wall-clock on a single host.}
+\label{tab:ae-map}
 \centering
 \footnotesize
 \begin{tabular}{@{}llc@{}}
@@ -222,8 +224,6 @@ Section~VI case studies        & \path{benchmarks/<name>/run_compare.sh}        
 Table~V (LLM diagnostics)      & \texttt{python -m scripts.validation.main --llm-eval} & 10--20 min (CPU only) \\
 \bottomrule
 \end{tabular}
-\caption{AE reproduction map: each paper element, its entry-point script, and expected wall-clock on a single host.}
-\label{tab:ae-map}
 \end{table*}
 
 \textbf{Known Deviations.} Before executing the commands below, note the following non-determinism caveats and tolerance windows:
