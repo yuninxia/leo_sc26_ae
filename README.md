@@ -153,7 +153,7 @@ Per-vendor measurement of original vs. optimized kernels for Table IV.
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor nvidia   # on GH200
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor amd      # on MI300A
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor intel    # on GPU Max 1100
-python postprocess.py                 # generate Table IV data
+cd benchmarks/rajaperf-h100 && python postprocess.py  # generate Table IV data
 ```
 
 **Expected:** per-kernel speedups match Table IV within ±5% (NVIDIA/AMD) or ±9% (Intel, due to platform variability).
@@ -192,7 +192,7 @@ Routes to Gemini 3.1 Pro via OpenRouter. Reduce `--llm-concurrency` (default 5) 
 ## Expected Results (Tolerance)
 
 - **Table IV speedups:** ±5% on NVIDIA GH200 and AMD MI300A (median CV < 1%); ±9% on Intel PVC (median CV ~9%)
-- **Figure 5 SDC coverage:** NVIDIA 30–74% → 64–94% after pruning (exact values within rounding)
+- **Figure 5 SDC coverage (before → after pruning):** NVIDIA 30–74% → 64–94%; AMD 80–97%; Intel PVC stable at 61–89% (exact values within rounding)
 - **Table V (semantic-match proxy only):** The bundled `--llm-eval` path reproduces Table V's semantic-match evaluation (does the LLM identify the same root cause LEO ranks first?) with per-kernel scores subject to LLM sampling variance. The paper's Compilable / Speedup / Regressions columns come from a separate compile-and-benchmark harness not bundled here and are *not* reproduced by this path.
 
 ---

@@ -26,10 +26,6 @@
 #   ./build_containers.sh nvidia --run               # Build and open interactive shell
 #   ./build_containers.sh all                        # Build base + RAJAPerf for all vendors
 #   ./build_containers.sh all --workload llamacpp    # Build base + llama.cpp for all vendors
-#
-# The script SSHes to the appropriate target machine, builds the Docker image,
-# and optionally converts to Singularity or opens an interactive shell.
-# Requires shared filesystem access (NFS) to the Leo project directory.
 
 set -e
 
