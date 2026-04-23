@@ -83,7 +83,7 @@ $A_1$   &  $C_1, C_2, C_3$ & Table IV (per-kernel speedups) \\
 \end{center}
 
 \bigskip
-\noindent\textbf{Badges requested.} We intend to apply for the SC26 badges \emph{Artifacts Available}, \emph{Artifacts Evaluated-Functional}, and \emph{Results Replicated}.
+\noindent\textbf{Badges requested.} We intend to apply for the SC26 badges \emph{Artifacts Available}, \emph{Artifacts Evaluated-Functional}, and \emph{Results Reproduced}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Artifact Identification}
@@ -230,7 +230,7 @@ Table~V (LLM diagnostics)      & \texttt{python -m scripts.validation.main --llm
 \begin{itemize}
 \item \textbf{Determinism.} LEO output is byte-identical across repeated runs on the same measurement database; archived HPCToolkit timestamps are historical and do not affect analysis results.
 \item \textbf{Intel PVC variability.} Runtime noise on GPU Max~1100 is higher than on NVIDIA/AMD (median CV $\sim$9\%). Use the $\pm$9\% tolerance when comparing Table~IV Intel speedups.
-\item \textbf{Minimum reproduction target.} Reviewers with access to a single vendor fit inside SC26's 8-hour AE budget and can earn \emph{Results Replicated} credit on that vendor: NVIDIA GH200 or AMD MI300A alone reproduces all 21 rows of Table~IV for that column in $\sim$2--4~h; Intel PVC reproduces 18 rows (Kripke, llama.cpp, QuickSilver lack SYCL ports and are marked N/A). Per-vendor runs are independent; multi-vendor reproduction is parallelizable across separate GPU hosts.
+\item \textbf{Minimum reproduction target.} Reviewers with access to a single vendor fit inside SC26's 8-hour AE budget and can earn \emph{Results Reproduced} credit on that vendor: NVIDIA GH200 or AMD MI300A alone reproduces all 21 rows of Table~IV for that column in $\sim$2--4~h; Intel PVC reproduces 18 rows (Kripke, llama.cpp, QuickSilver lack SYCL ports and are marked N/A). Per-vendor runs are independent; multi-vendor reproduction is parallelizable across separate GPU hosts.
 \item \textbf{LLM sampling variance.} The semantic-match proxy produced by \path{--llm-eval} is non-deterministic at temperature~0.7; repeated invocations may differ per-kernel, but the relative ranking of C vs.\ C+S vs.\ C+L(S) is stable. The paper's Compilable / Geomean Speedup / Regressions columns come from a separate compile-and-benchmark harness (not bundled); this artifact does not reproduce those numbers.
 \end{itemize}
 
