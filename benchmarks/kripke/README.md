@@ -7,12 +7,13 @@ Group↔Zone swap in the RAJA execution policy.
 ## Upstream
 
 - Source: https://github.com/LLNL/Kripke
-- Baseline used in the paper: `master` branch, commit representing RAJA
-  execution policies prior to the swap. Clone and treat the upstream
+- Baseline used in the paper: commit `5daceb0f` (dated 2026-03-26; head of
+  `master` before paper submission). Clone and treat the upstream
   `LTimes.cpp` as the *original*.
 
 ```bash
 git clone https://github.com/LLNL/Kripke /tmp/kripke-original
+cd /tmp/kripke-original && git checkout 5daceb0f7aa66d45a01fd43649f6ae848f76caf0
 ```
 
 ## What's in this directory

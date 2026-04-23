@@ -8,11 +8,14 @@ the cross-file call and hoists loop invariants.
 ## Upstream
 
 - Source: https://github.com/LLNL/Quicksilver
-- Baseline used in the paper: `master`. Clone and treat the upstream files
-  as the *original* for diffing.
+- Baseline used in the paper: commit `eb68bb8d` (dated 2023-08-18; head of
+  `master`). QuickSilver has been dormant since that date, so the baseline
+  has not advanced between paper writing and submission.
+- Treat the upstream files as the *original* for diffing.
 
 ```bash
 git clone https://github.com/LLNL/Quicksilver /tmp/quicksilver-original
+cd /tmp/quicksilver-original && git checkout eb68bb8d6fc53de1f65011d4e79ff2ed0dd60f3b
 ```
 
 ## What's in this directory

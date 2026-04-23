@@ -8,11 +8,13 @@ lives in vendor-specific patches.
 ## Upstream
 
 - Source: https://github.com/ggml-org/llama.cpp
-- Baseline used in the paper: upstream `master` at the time of submission.
-  The relevant file is `ggml/src/ggml-cuda/mmq.cuh`.
+- Baseline used in the paper: commit `d12cc3d1` (dated 2026-04-08; head of
+  `master` at the time of paper submission). The relevant file is
+  `ggml/src/ggml-cuda/mmq.cuh`.
 
 ```bash
 git clone https://github.com/ggml-org/llama.cpp /tmp/llamacpp-original
+cd /tmp/llamacpp-original && git checkout d12cc3d1ca6bba741cd77887ac9c9ee18c8415c7
 # then locate ggml/src/ggml-cuda/mmq.cuh
 ```
 
