@@ -158,12 +158,12 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 
 The evaluation workflow consists of four tasks:
 
-\begin{description}
+\begin{IEEEdescription}[\IEEEsetlabelwidth{$T_3$: Benchmark}]
 \item[$T_1$: Profile] Run \texttt{hpcrun} with PC sampling on each workload inside vendor-specific Docker containers. Output: HPCToolkit measurement databases.
 \item[$T_2$: Analyze] Run LEO (\path{scripts/analyze_benchmark.py}) on each measurement database. Output: ranked stall chains, dependency graphs, SDC metrics.
 \item[$T_3$: Benchmark] Run original vs.\ optimized kernels (\path{benchmarks/rajaperf-h100/run_compare.sh}). Output: per-kernel speedup measurements.
 \item[$T_4$: Collect] Run collection scripts (\path{scripts/collect_sdc.sh}, \path{scripts/time_analysis.sh}). Output: SDC coverage data (Figure~5), analysis timing data.
-\end{description}
+\end{IEEEdescription}
 
 Dependencies: $T_1 \rightarrow T_2 \rightarrow T_4$; $T_1 \rightarrow T_3$. Tasks $T_2$ and $T_3$ can run in parallel after $T_1$ completes.
 
