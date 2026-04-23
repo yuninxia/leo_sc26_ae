@@ -151,7 +151,7 @@ The 21 workloads evaluated in Table~IV consist of 15 RAJAPerf kernels plus 6 HPC
 \item Obtain the artifact: download and extract the tarball from the $A_1$ Zenodo DOI.
 \item Install Python dependencies: \texttt{uv sync} (requires Python 3.11--3.13 and GCC 11+ to build the vendored \texttt{hpcanalysis} C++ extension).
 \item Download pre-collected HPCToolkit profiling data ($\sim$1~GB compressed, $\sim$5.6~GB extracted): \texttt{bash}~\path{scripts/download_data.sh}.
-\item Build the universal analysis container for CPU-only reproduction of Figure~5 and Table~V: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only}. For full GPU-side reproduction of Table~IV, additionally build vendor-specific containers via the same script.
+\item Build the universal analysis container for CPU-only reproduction of Figure~5 and Table~V: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only}. For GPU-side reproduction of Table~IV, reviewers should build vendor-specific containers directly with \texttt{docker build -f}~\path{scripts/evaluation/docker/Dockerfile.rajaperf-<vendor>}~\texttt{-t}~\path{leo-rajaperf-<vendor>}~\texttt{.} on a host with the target GPU; the helper script's non-\texttt{universal} vendors SSH to the authors' Rice cluster and are not portable.
 \end{enumerate}
 
 \artcomp

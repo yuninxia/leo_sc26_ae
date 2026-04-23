@@ -149,7 +149,7 @@ bash scripts/time_analysis.sh
 Per-vendor measurement of original vs. optimized kernels for Table IV.
 
 ```bash
-cd benchmarks/rajaperf-h100
+# Run from the repo root (not from benchmarks/rajaperf-h100/).
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor nvidia   # on GH200
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor amd      # on MI300A
 bash scripts/evaluation/run_workload_rajaperf.sh --vendor intel    # on GPU Max 1100
@@ -193,7 +193,7 @@ Routes to Gemini 3.1 Pro via OpenRouter. Reduce `--llm-concurrency` (default 5) 
 
 - **Table IV speedups:** ±5% on NVIDIA GH200 and AMD MI300A (median CV < 1%); ±9% on Intel PVC (median CV ~9%)
 - **Figure 5 SDC coverage:** NVIDIA 30–74% → 64–94% after pruning (exact values within rounding)
-- **Table V:** Gemini 3.1 Pro results subject to LLM sampling variance; overall trends (100% compile rate with C+L(S), 1.29× speedup) should hold
+- **Table V (semantic-match proxy only):** The bundled `--llm-eval` path reproduces Table V's semantic-match evaluation (does the LLM identify the same root cause LEO ranks first?) with per-kernel scores subject to LLM sampling variance. The paper's Compilable / Speedup / Regressions columns come from a separate compile-and-benchmark harness not bundled here and are *not* reproduced by this path.
 
 ---
 
