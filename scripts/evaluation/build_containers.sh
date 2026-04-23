@@ -1,10 +1,15 @@
 #!/bin/bash
-# Build and optionally run evaluation containers on target GPU machines
+# Build and optionally run evaluation containers.
 #
-# NOTE FOR AE REVIEWERS: This script includes machine name hardcoded for the
-# authors' Rice University cluster (odyssey/gilgamesh/headroom). These are
-# only used for the `--run` option to SSH to the target machine. For local
-# builds, use `docker build` directly with the Dockerfiles in docker/.
+# LOCAL BUILD (no GPU, no SSH): pass vendor "universal" — everything runs on
+# localhost against the Dockerfiles in docker/. This is the path AE reviewers
+# should take for Figure 5 and Table V:
+#     bash build_containers.sh universal --base-only
+#
+# GPU BUILD (optional, target hardware): vendors amd/nvidia/intel (and variants
+# like nvidia-gilgamesh) build locally by default. Adding --run additionally
+# SSHes to the authors' Rice cluster (odyssey/gilgamesh/headroom) — only
+# relevant if you have access to that cluster; otherwise just drop --run.
 #
 # Uses a layered architecture:
 #   1. Base image (leo-base-*): HPCToolkit + Dyninst + Leo (profiling infrastructure)
