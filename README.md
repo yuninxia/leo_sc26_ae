@@ -68,7 +68,12 @@ bash scripts/download_data.sh
 
 This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `time_analysis.sh`) run without GPU hardware.
 
-A Zenodo mirror is also available for archival citation: concept DOI [10.5281/zenodo.19704349](https://doi.org/10.5281/zenodo.19704349) (always resolves to the latest release). The Zenodo record archives the repository snapshot; the ~1 GB measurement tarball currently lives on the GitHub Release `v1.0-sc26-data`. If the GitHub URL is unreachable (e.g., the repository is temporarily private), set `ZENODO_URL=<direct-file-url>` to point `download_data.sh` at a mirror.
+Two Zenodo records back this artifact:
+
+- **Source code** (concept DOI, always latest): [10.5281/zenodo.19704349](https://doi.org/10.5281/zenodo.19704349)
+- **Profiling data tarball** (~1 GB, CC0): [10.5281/zenodo.19705577](https://doi.org/10.5281/zenodo.19705577)
+
+`download_data.sh` primarily pulls from the GitHub Release `v1.0-sc26-data`; if the GitHub URL is unreachable (e.g., the source repo is temporarily private), it automatically falls back to the Zenodo data mirror.
 
 ### LLM API (optional, Table V only)
 

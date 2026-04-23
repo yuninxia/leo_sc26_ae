@@ -12,11 +12,10 @@ RELEASE_TAG="v1.0-sc26-data"
 GH_REPO="yuninxia/leo_sc26_ae"
 GH_URL="https://github.com/${GH_REPO}/releases/download/${RELEASE_TAG}/${TARBALL}"
 
-# Optional Zenodo archival mirror for the measurement tarball. The Zenodo source
-# archive (DOI 10.5281/zenodo.19704349) contains only the repo snapshot, not the
-# ~1 GB measurements; if a separate Zenodo data deposit is made later, set
-# ZENODO_URL (or edit here) to the direct file URL.
-ZENODO_URL="${ZENODO_URL:-}"
+# Zenodo archival mirror for the measurement tarball (separate deposit, DOI
+# 10.5281/zenodo.19705577, CC0). Used as fallback if the GitHub release URL
+# above is unreachable (e.g., if the source repo is temporarily private).
+ZENODO_URL="${ZENODO_URL:-https://zenodo.org/records/19705577/files/leo-sc26-measurements.tar.gz}"
 
 if [ -d "${DATA_DIR}/per-kernel" ] && [ -n "$(ls -A "${DATA_DIR}/per-kernel" 2>/dev/null)" ]; then
   echo "Data already present at ${DATA_DIR}"
