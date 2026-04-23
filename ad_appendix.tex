@@ -63,7 +63,7 @@ Appendix: Artifact Description/Artifact Evaluation
 \subsection{Computational Artifacts}
 
 \begin{description}
-\item[$A_1$] LEO analysis tool and evaluation infrastructure. Reviewed snapshot (pinned, tag \texttt{v0.1.6-sc26-ae}): \url{https://doi.org/10.5281/zenodo.19707117}. Concept DOI (resolves to the latest release): \url{https://doi.org/10.5281/zenodo.19704349}. Pre-collected profiling data (separate deposit, $\sim$1~GB): \url{https://doi.org/10.5281/zenodo.19705577}.
+\item[$A_1$] LEO analysis tool and evaluation infrastructure. Reviewed snapshot (pinned, tag \texttt{v0.1.7-sc26-ae}): \url{https://doi.org/10.5281/zenodo.19708266}. Concept DOI (resolves to the latest release): \url{https://doi.org/10.5281/zenodo.19704349}. Pre-collected profiling data (separate deposit, $\sim$1~GB): \url{https://doi.org/10.5281/zenodo.19705577}.
 \end{description}
 
 \begin{center}
@@ -190,7 +190,7 @@ Raw experimental results are processed by:
 Reviewer-facing setup assumes a fresh x86-64 Linux machine with Docker and network access. The four-step enumerate below mirrors \S~Artifact Setup $\to$ Installation and Deployment in the AD; it is duplicated here so reviewers can execute the AE section standalone.
 
 \begin{enumerate}
-\item Obtain the artifact: download the tarball from the reviewed-snapshot DOI \url{https://doi.org/10.5281/zenodo.19707117} (tag \texttt{v0.1.6-sc26-ae}; or latest via concept DOI \texttt{10.5281/zenodo.19704349}) and extract it, e.g.\ into \path{~/leo_sc26_ae}.
+\item Obtain the artifact: download the tarball from the reviewed-snapshot DOI \url{https://doi.org/10.5281/zenodo.19708266} (tag \texttt{v0.1.7-sc26-ae}; or latest via concept DOI \texttt{10.5281/zenodo.19704349}) and extract it, e.g.\ into \path{~/leo_sc26_ae}.
 \item Install \texttt{uv} if not already present: \url{https://astral.sh/uv/install.sh} (shell-install script). Then install Python dependencies: \texttt{uv sync} (Python 3.11--3.13; on RHEL~8, prefix with \texttt{scl enable gcc-toolset-11 --} because the vendored \texttt{hpcanalysis} C++ extension requires GCC~11+).
 \item Download pre-collected profiling data: \texttt{bash}~\path{scripts/download_data.sh} ($\sim$1~GB compressed, $\sim$5.6~GB extracted under \texttt{results/}).
 \item Build the universal analysis container: \texttt{bash}~\path{scripts/evaluation/build_containers.sh}~\texttt{universal --base-only} ($\sim$20~min one-time; produces the \texttt{leo-base-universal} image used for Figure~5 and Table~V reproduction).
