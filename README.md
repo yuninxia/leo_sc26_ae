@@ -35,7 +35,6 @@ leo_sc26_ae/
 │   └── xsbench/               # XSBench (nuclear physics)
 ├── tests/                      # Unit tests (data downloaded separately)
 ├── docs/                       # Setup and troubleshooting guides
-├── ad_appendix.pdf             # Artifact Description from paper
 ├── pyproject.toml              # Python dependencies (uv)
 ├── LICENSE                     # Apache 2.0
 └── CITATION.cff                # Citation metadata
@@ -128,7 +127,7 @@ Full 3-vendor reproduction requires:
 
 ## Reproduction Workflow
 
-The evaluation has four tasks. For full detail, see `ad_appendix.pdf`.
+The evaluation has four tasks. The full AD/AE Appendix is submitted with the paper (SC26 submission system); this README is the reviewer's quick reference.
 
 ### Task 1: Analyze pre-collected profiling data (CPU-only)
 
@@ -247,4 +246,4 @@ full SC26 proceedings information.
 
 ## Acknowledgments
 
-See `ad_appendix.pdf` for full artifact description.
+The full AD/AE Appendix is submitted with the paper via the SC26 submission system (not bundled in this artifact to avoid stale-snapshot drift).
