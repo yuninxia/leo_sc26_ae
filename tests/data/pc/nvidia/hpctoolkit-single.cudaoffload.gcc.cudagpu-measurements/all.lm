@@ -1,0 +1,5 @@
+/home/yx87/pg/leo/3rdparty/qahpct/minitest/nvidiagpu/single.cudaoffload.gcc/remove-elide/single.cudaoffload.gcc.cudagpu
+/home/yx87/software/hpctoolkit/2026.0.0/lib64/libhpcrun.so
+/usr/lib64/libcuda.so.580.95.05
+/usr/local/cuda-12.9/targets/x86_64-linux/lib/libcupti.so.2025.2.1
+gpubins/67e7ddd42e43d0ca040956d9d9b316fa.gpubin

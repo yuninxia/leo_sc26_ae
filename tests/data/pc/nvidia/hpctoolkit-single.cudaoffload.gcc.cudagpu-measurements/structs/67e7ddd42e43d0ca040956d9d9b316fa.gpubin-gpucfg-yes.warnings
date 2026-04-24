@@ -1,0 +1,5 @@
+nvdisasm warning : Disassembling Std Elf to Old format or Old Elf to Std format not supported yet, switching to Std format
+nvdisasm warning : Dataflow analysis disabled due to previous warnings
+nvdisasm error   : Cannot print control flow graph as flow analysis is disabled
+WARNING: unable to parse section: .text._Z8xcomputePKdS0_Pdii
+CACHESTAT  (Cache disabled by user)

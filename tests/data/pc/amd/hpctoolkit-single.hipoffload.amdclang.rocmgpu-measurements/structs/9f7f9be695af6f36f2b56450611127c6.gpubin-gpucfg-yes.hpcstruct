@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<!DOCTYPE HPCToolkitStructure [
+<!-- SPDX-SnippetBegin -->
+<!--
+SPDX-FileCopyrightText: Contributors to the HPCToolkit Project
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
+<!-- ******************************************************************** -->
+<!-- HPCToolkit Structure DTD                                             -->
+<!-- Version 4.9                                                          -->
+<!-- ******************************************************************** -->
+
+<!ELEMENT HPCToolkitStructure (LM)*>
+<!ATTLIST HPCToolkitStructure
+        version CDATA #REQUIRED
+        i       CDATA #REQUIRED
+        n       CDATA #IMPLIED>
+  <!-- Load module: -->
+  <!--   (i)d: unique identifier for cross referencing -->
+  <!--   (n)ame -->
+  <!--   (l)ine range: "beg-end" (inclusive range) -->
+  <!--   (v)ma-range-set: "{[beg-end), [beg-end)...}" -->
+  <!--   (t)arget: target function address -->
+  <!--   (d)evice: device name -->
+  <!ELEMENT LM (F|P)*>
+  <!ATTLIST LM
+        i CDATA #REQUIRED
+        n CDATA #REQUIRED
+        has-calls CDATA #REQUIRED
+        v CDATA #IMPLIED>
+  <!-- File: -->
+  <!ELEMENT F (P|L|S)*>
+  <!ATTLIST F
+        i CDATA #REQUIRED
+        n CDATA #REQUIRED>
+  <!-- Procedure: ln=link name (if different than name) -->
+  <!ELEMENT P (P|A|L|S|C)*>
+  <!ATTLIST P
+        i  CDATA #REQUIRED
+        n  CDATA #REQUIRED
+        ln CDATA #IMPLIED
+        l  CDATA #IMPLIED
+        s  CDATA #IMPLIED
+        v  CDATA #IMPLIED>
+  <!-- Alien: (f)ilename -->
+  <!ELEMENT A (A|L|S|C)*>
+  <!ATTLIST A
+        i CDATA #REQUIRED
+        f CDATA #IMPLIED
+        n CDATA #IMPLIED
+        ln CDATA #IMPLIED
+        l CDATA #IMPLIED
+        v CDATA #IMPLIED>
+  <!-- Loop -->
+  <!ELEMENT L (A|L|S|C)*>
+  <!ATTLIST L
+        i CDATA #REQUIRED
+        l CDATA #REQUIRED
+        f CDATA #IMPLIED
+        v CDATA #IMPLIED>
+  <!-- Statement -->
+  <!ELEMENT S EMPTY>
+  <!ATTLIST S
+        i CDATA #REQUIRED
+        l CDATA #REQUIRED
+        v CDATA #IMPLIED>
+  <!-- Callsite (a special Statement) -->
+  <!ELEMENT C (C)*>
+  <!ATTLIST C
+        i CDATA #REQUIRED
+        l CDATA #REQUIRED
+        v CDATA #IMPLIED
+        t CDATA #IMPLIED
+        d CDATA #IMPLIED>
+<!-- SPDX-SnippetEnd -->
+]>
+<HPCToolkitStructure i="0" version="4.9" n="">
+<LM i="2" n="gpubins/9f7f9be695af6f36f2b56450611127c6.gpubin" has-calls="1" v="{}">
+<F i="3" n="/opt/rocm-7.1.1/include/hip/amd_detail/amd_hip_runtime.h">
+<P i="4" n="xcompute(double const*, double const*, double*, int, int) [9f7f9be695af6f36f2b56450611127c6.gpubin]" ln="_Z8xcomputePKdS0_Pdii" l="264" v="{[0x1900-0x1901)}">
+<S i="5" l="0" v="{[0x1920-0x1924)}"/>
+<A i="6" l="45" f="/storage/users/yuning/pg/odyssey/leo/3rdparty/qahpct/minitest/src/compute.h" n="&lt;inline&gt;" v="{}">
+<S i="7" l="67" v="{[0x1968-0x1970)}"/>
+<L i="8" l="45" f="/storage/users/yuning/pg/odyssey/leo/3rdparty/qahpct/minitest/src/compute.h" v="{[0x1998-0x1999)}">
+<S i="9" l="45" v="{[0x19a8-0x19b0) [0x1a24-0x1a28)}"/>
+<S i="10" l="67" v="{[0x1998-0x19a8) [0x19b0-0x1a24)}"/>
+</L>
+</A>
+<A i="11" l="23" f="/storage/users/yuning/pg/odyssey/leo/3rdparty/qahpct/minitest/src/hipgpu.hip.cpp" n="&lt;inline&gt;" v="{}">
+<S i="12" l="23" v="{[0x191c-0x1920) [0x1924-0x1928)}"/>
+<S i="13" l="24" v="{[0x1928-0x193c)}"/>
+<S i="14" l="29" v="{[0x1a28-0x1a2c)}"/>
+</A>
+<A i="15" l="23" f="/storage/users/yuning/pg/odyssey/leo/3rdparty/qahpct/minitest/src/hipgpu.hip.cpp" n="" v="{}">
+<A i="16" l="296" f="/opt/rocm-7.1.1/include/hip/amd_detail/amd_hip_runtime.h" n="__hip_builtin_blockDim_t::__get_x()" v="{}">
+<A i="17" l="296" f="/opt/rocm-7.1.1/include/hip/amd_detail/amd_hip_runtime.h" n="" v="{}">
+<A i="18" l="264" f="/opt/rocm-7.1.1/include/hip/amd_detail/amd_hip_runtime.h" n="__hip_get_block_dim_x()" v="{}">
+<S i="19" l="0" v="{[0x1958-0x1968)}"/>
+<S i="20" l="264" v="{[0x1900-0x191c) [0x193c-0x1958) [0x1970-0x1998)}"/>
+</A>
+</A>
+</A>
+</A>
+</P>
+</F>
+</LM>
+</HPCToolkitStructure>

@@ -1,0 +1,8 @@
+/opt/rocm-7.1.1/lib/libamdhip64.so.7.1.70101
+/opt/rocm-7.1.1/lib/libhsa-runtime64.so.1.18.70101
+/opt/rocm-7.1.1/lib/librocprofiler-sdk.so.1.0.0
+/storage/users/yuning/pc_sc26/hpctoolkit_pcsampling_artifact/builds/hpctoolkit-install-amd/lib64/libhpcrun.so
+/storage/users/yuning/pg/odyssey/leo/3rdparty/qahpct/minitest/amdgpu/single.hipoffload.amdclang/single.hipoffload.amdclang.rocmgpu
+/usr/lib64/libpthread-2.28.so
+gpubins/329cf19bccddb95f5601d814c8b913c1.gpubin
+gpubins/9f7f9be695af6f36f2b56450611127c6.gpubin
