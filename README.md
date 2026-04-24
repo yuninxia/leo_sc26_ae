@@ -87,20 +87,26 @@ Reproducing Table V requires **Gemini 3.1 Pro** via the OpenRouter proxy (https:
 git clone https://github.com/yuninxia/leo_sc26_ae.git
 cd leo_sc26_ae
 
-# 2. Install Python deps
+# 2. Check / install system build deps (python3-dev, pkg-config, unzip).
+#    Most cloud base images (Lambda, Verda, RunPod, Paperspace) ship without
+#    these and `uv sync` will fail at the `hpcanalysis` meson build otherwise.
+bash scripts/preflight.sh            # dry-run: prints missing + exact install command
+bash scripts/preflight.sh --install  # or: auto-install via apt / dnf (uses sudo if not root)
+
+# 3. Install Python deps
 curl -LsSf https://astral.sh/uv/install.sh | sh  # if uv not installed
 uv sync
 
-# 3. Download pre-collected profiling data (~1 GB download, ~5.6 GB extracted)
+# 4. Download pre-collected profiling data (~1 GB download, ~5.6 GB extracted)
 bash scripts/download_data.sh
 
-# 4. Build the universal analysis Docker image (~20 min one-time)
+# 5. Build the universal analysis Docker image (~20 min one-time)
 bash scripts/evaluation/build_containers.sh universal --base-only
 
-# 5. Reproduce Figure 5 (SDC coverage)
+# 6. Reproduce Figure 5 (SDC coverage)
 bash scripts/collect_sdc.sh
 
-# 6. (Optional) Verify LEO analyzer unit tests
+# 7. (Optional) Verify LEO analyzer unit tests
 uv run pytest tests/ -v -m "not slow" --ignore-glob="*test_integration*"
 ```
 

@@ -1,0 +1,46 @@
+# Don't bloat docker images with host-side state. Runtime data is bind-mounted
+# by the `docker run -v` invocations in scripts/collect_sdc.sh, scripts/evaluation/
+# wrappers, etc. — it does NOT need to be baked into the image.
+
+# Measurement data (8.5 GB, downloaded via scripts/download_data.sh)
+results/
+
+# Python virtualenv (recreated inside the image by `uv sync`; host copy must not leak)
+.venv/
+
+# Per-run logs (from scripts/runme.sh and its step logs)
+logs/
+*.log
+
+# Downloaded archives
+leo*.zip
+leo*.tar.gz
+leo-sc26-measurements.tar.gz
+
+# Python / editor / OS noise
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Git
+.git/
+
+# Benchmark build artifacts (also gitignored; belt-and-suspenders)
+benchmarks/*/build/
+benchmarks/*/build-*/
+benchmarks/*-results-*/
+benchmarks/*-run-*/
+**/hpctoolkit-*.d/
+**/hpctoolkit-*.m/
+
+# The appendix source + compiled PDF — not needed by any docker image
+ad_appendix.tex
+ad_appendix.pdf
