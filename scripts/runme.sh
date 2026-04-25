@@ -8,9 +8,14 @@
 # are skipped. Total wall-clock on a clean x86_64 VM: ~35–45 min.
 #
 # Usage:
-#   bash scripts/runme.sh                   # Figure 5 + sha256 verify (CPU-only, ~35–45 min)
-#   bash scripts/runme.sh --skip-preflight  # if you already installed python3-dev etc.
+#   bash scripts/runme.sh                          # Figure 5 + sha256 verify (CPU-only, ~20 min)
+#   bash scripts/runme.sh --with-table-iv          # + build NVIDIA chain, download baselines, run 15 RAJAPerf kernels (~30 min extra, GPU)
+#   bash scripts/runme.sh --with-table-iv --gpu-arch 80    # A100 (sm_80) instead of H100/GH200 (sm_90 default)
+#   bash scripts/runme.sh --skip-preflight         # if you already installed python3-dev etc.
 #   bash scripts/runme.sh --help
+#
+# Disk requirement: Figure-5-only ≥40 GB free; with --with-table-iv ≥120 GB free
+# (the vendor image chain accumulates ~90 GB of intermediate layers).
 #
 # Exit codes: 0 = everything verified, non-zero = a step failed.
 set -euo pipefail
@@ -20,9 +25,15 @@ LEO_ROOT="$(cd "$HERE/.." && pwd)"
 cd "$LEO_ROOT"
 
 DO_PREFLIGHT=true
+DO_TABLE_IV=false
+TABLE_IV_VENDOR="nvidia"
+TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-preflight) DO_PREFLIGHT=false; shift ;;
+    --with-table-iv)  DO_TABLE_IV=true; shift ;;
+    --vendor)         TABLE_IV_VENDOR="$2"; shift 2 ;;
+    --gpu-arch)       TABLE_IV_GPU_ARCH="$2"; shift 2 ;;
     --help|-h) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown argument: $1 (try --help)" >&2; exit 2 ;;
   esac
@@ -98,10 +109,45 @@ run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sd
 
 run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256"
 
+if [ "$DO_TABLE_IV" = true ]; then
+  run_step "build leo-rajaperf-${TABLE_IV_VENDOR} (3-layer chain)" \
+    env GPU_ARCH="$TABLE_IV_GPU_ARCH" \
+    bash "$HERE/evaluation/build_workload_image.sh" "$TABLE_IV_VENDOR" rajaperf
+
+  run_step "download RAJAPerf baselines (original + optimized)" \
+    bash "$HERE/evaluation/download_benchmarks.sh"
+
+  run_step "Table IV ${TABLE_IV_VENDOR}: run_compare (all 15 RAJAPerf kernels)" \
+    bash "$HERE/evaluation/run_workload_rajaperf.sh" --vendor "$TABLE_IV_VENDOR"
+
+  run_step "compare speedups vs rajaperf-compare-summary.csv" bash -c "
+    SUM='$LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv'
+    if [ -s \"\$SUM\" ]; then
+      python3 - <<'PYEOF'
+import csv
+with open('$LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv') as f:
+    rows = list(csv.DictReader(f))
+if not rows: raise SystemExit('summary CSV empty')
+print(f\"{'kernel':<28}{'speedup_mean':>14}\")
+print('-' * 42)
+for r in rows:
+    print(f\"{r['kernel']:<28}{float(r['speedup_mean']):>13.4f}x\")
+PYEOF
+    else
+      echo 'summary CSV not produced — check preceding step'; exit 1
+    fi"
+fi
+
 END_ALL=$(date +%s)
 echo ""
 echo "====================================================================="
 echo "  DONE. Figure 5 reproduced and verified (sha256 OK)."
+if [ "$DO_TABLE_IV" = true ]; then
+  echo "  Table IV ${TABLE_IV_VENDOR} RAJAPerf also reproduced."
+  echo "  Optional HPC apps (not auto-run): miniBUDE, XSBench, Kripke, LULESH, llama.cpp, QuickSilver."
+  echo "    bash scripts/evaluation/build_workload_image.sh ${TABLE_IV_VENDOR} <workload>"
+  echo "    bash benchmarks/<workload>/run_compare*.sh"
+fi
 echo "  Total wall-clock: $(( (END_ALL - START_ALL) / 60 )) min $(( (END_ALL - START_ALL) % 60 )) s"
 echo "  Per-step logs: $LOG_DIR"
 echo ""

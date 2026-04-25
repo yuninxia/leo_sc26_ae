@@ -11,7 +11,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_IMAGE="leo-llamacpp-nvidia-arm"
+DOCKER_IMAGE="leo-llamacpp-nvidia"
 MODEL="${MODEL_DIR:-$HOME/models}/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf"
 RUNS=3
 GPU_DEVICE=0
