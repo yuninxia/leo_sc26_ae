@@ -13,7 +13,7 @@ authors:
     email: "johnmc@rice.edu"
     orcid: "https://orcid.org/0000-0002-9026-5453"
 year: 2026
-version: "v0.1.13-sc26-ae"
+version: "v0.1.14-sc26-ae"
 license: Apache-2.0
 repository-code: "https://github.com/yuninxia/leo_sc26_ae"
 preferred-citation:

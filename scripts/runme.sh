@@ -9,7 +9,9 @@
 #
 # Usage:
 #   bash scripts/runme.sh                          # Figure 5 + sha256 verify (CPU-only, ~20 min)
+#   bash scripts/runme.sh --use-prebuilt           # pull pre-built leo-base-universal from Docker Hub (~3 min vs ~10 min build)
 #   bash scripts/runme.sh --with-table-iv          # + build NVIDIA chain, download baselines, run 15 RAJAPerf kernels (~30 min extra, GPU)
+#   bash scripts/runme.sh --with-table-iv --use-prebuilt   # everything above, but pull all images from Docker Hub (~10 min vs ~30 min)
 #   bash scripts/runme.sh --with-table-iv --gpu-arch 80    # A100 (sm_80) instead of H100/GH200 (sm_90 default)
 #   bash scripts/runme.sh --skip-preflight         # if you already installed python3-dev etc.
 #   bash scripts/runme.sh --help
@@ -26,15 +28,19 @@ cd "$LEO_ROOT"
 
 DO_PREFLIGHT=true
 DO_TABLE_IV=false
+USE_PREBUILT=false
+PREBUILT_TAG="${PREBUILT_TAG:-v0.1.13}"
 TABLE_IV_VENDOR="nvidia"
 TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-preflight) DO_PREFLIGHT=false; shift ;;
     --with-table-iv)  DO_TABLE_IV=true; shift ;;
+    --use-prebuilt)   USE_PREBUILT=true; shift ;;
+    --prebuilt-tag)   PREBUILT_TAG="$2"; shift 2 ;;
     --vendor)         TABLE_IV_VENDOR="$2"; shift 2 ;;
     --gpu-arch)       TABLE_IV_GPU_ARCH="$2"; shift 2 ;;
-    --help|-h) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --help|-h) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown argument: $1 (try --help)" >&2; exit 2 ;;
   esac
 done
@@ -100,6 +106,9 @@ fi
 if docker image inspect leo-base-universal:latest >/dev/null 2>&1; then
   echo ""; echo "==> Step $((STEP_N + 1)) skipped: leo-base-universal:latest already built"
   STEP_N=$((STEP_N + 1))
+elif [ "$USE_PREBUILT" = true ]; then
+  run_step "pull pre-built leo-base-universal:${PREBUILT_TAG} from Docker Hub (~2 min)" \
+    bash "$HERE/evaluation/pull_prebuilt_images.sh" --workloads base-universal --tag "$PREBUILT_TAG"
 else
   run_step "build leo-base-universal Docker image (~15-20 min)" bash "$HERE/evaluation/build_containers.sh" universal --base-only
 fi
@@ -110,9 +119,14 @@ run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sd
 run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256"
 
 if [ "$DO_TABLE_IV" = true ]; then
-  run_step "build leo-rajaperf-${TABLE_IV_VENDOR} (3-layer chain)" \
-    env GPU_ARCH="$TABLE_IV_GPU_ARCH" \
-    bash "$HERE/evaluation/build_workload_image.sh" "$TABLE_IV_VENDOR" rajaperf
+  if [ "$USE_PREBUILT" = true ]; then
+    run_step "pull pre-built leo-rajaperf-${TABLE_IV_VENDOR}:${PREBUILT_TAG} from Docker Hub (~3-5 min)" \
+      bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads base,hpctoolkit,rajaperf --tag "$PREBUILT_TAG"
+  else
+    run_step "build leo-rajaperf-${TABLE_IV_VENDOR} (3-layer chain)" \
+      env GPU_ARCH="$TABLE_IV_GPU_ARCH" \
+      bash "$HERE/evaluation/build_workload_image.sh" "$TABLE_IV_VENDOR" rajaperf
+  fi
 
   run_step "download RAJAPerf baselines (original + optimized)" \
     bash "$HERE/evaluation/download_benchmarks.sh"
