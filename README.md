@@ -67,10 +67,11 @@ bash scripts/download_data.sh
 
 This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `time_analysis.sh`) run without GPU hardware.
 
-Two Zenodo records back this artifact:
+Three Zenodo records back this artifact:
 
 - **Source code** (concept DOI, always latest): [10.5281/zenodo.19704349](https://doi.org/10.5281/zenodo.19704349)
 - **Profiling data tarball** (~1 GB, CC0): [10.5281/zenodo.19705577](https://doi.org/10.5281/zenodo.19705577)
+- **Pre-built Docker images** (NVIDIA chain, ~12 GB, Apache-2.0): [10.5281/zenodo.19752199](https://doi.org/10.5281/zenodo.19752199) — mirror of `jssonxia/leo-*-nvidia` on Docker Hub. `gunzip -c leo-sc26-ae-images-v0.1.14.tar.gz | docker load` to skip the ~30 min build.
 
 `download_data.sh` primarily pulls from the GitHub Release `v1.0-sc26-data`; if the GitHub URL is unreachable (e.g., the source repo is temporarily private), it automatically falls back to the Zenodo data mirror.
 

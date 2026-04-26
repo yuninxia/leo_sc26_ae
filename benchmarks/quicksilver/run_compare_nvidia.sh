@@ -35,7 +35,6 @@ echo " Machine: ${MACHINE:-localhost}"
 echo "============================================"
 echo ""
 
-# Find host CUDA for nsys
 run_on_target() {
     if [ -n "$MACHINE" ]; then
         ssh "$MACHINE" "$@"
@@ -44,25 +43,15 @@ run_on_target() {
     fi
 }
 
-NSYS_MOUNT=""
-for cuda_path in /usr/local/cuda /packages/cuda/12.9.0; do
-    if run_on_target "test -d $cuda_path" 2>/dev/null; then
-        NSYS_MOUNT="-v $cuda_path:/opt/cuda-host:ro"
-        break
-    fi
-done
-
+# nsys is installed inside leo-quicksilver-nvidia (>= v0.1.15). No host bind-mount
+# is required — the image self-contains nsight-systems-cli on PATH.
 run_on_target "docker run --rm \
     --gpus device=$GPU_DEVICE \
     -e CUDA_VISIBLE_DEVICES=0 \
     -e QS_DEVICE=GPU \
     -v $SCRIPT_DIR/optimized:/opt/qs-opt:ro \
-    $NSYS_MOUNT \
     --entrypoint bash $DOCKER_IMAGE -c '
 set -e
-if [ -x /opt/cuda-host/bin/nsys ]; then
-    export PATH=/opt/cuda-host/bin:\$PATH
-fi
 
 SRC=/opt/velocity-bench/QuickSilver/CUDA/src
 QS=/opt/quicksilver/bin/qs

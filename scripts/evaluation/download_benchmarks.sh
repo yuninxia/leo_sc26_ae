@@ -33,11 +33,11 @@ RAJA_DIR="$LEO_ROOT/benchmarks/rajaperf-h100"
 # Upstream baseline used by the paper. Pinning via commit SHA keeps the
 # baseline reproducible even if LLNL/RAJAPerf develop moves ahead.
 ORIGINAL_REPO="https://github.com/LLNL/RAJAPerf.git"
-ORIGINAL_COMMIT="5daceb0f7aa66d45a01fd43649f6ae848f76caf0"  # master head, 2026-03-26
+ORIGINAL_COMMIT="0f37267d5ade955b5c6d0926a1d3620faf0896a1"  # PR #632 merge, used as paper baseline
 
 # Leo-guided optimized fork.
 OPTIMIZED_REPO="https://github.com/yuninxia/RAJAPerf.git"
-OPTIMIZED_BRANCH="leo-optimized"
+OPTIMIZED_BRANCH="optimizations-h100"
 
 clone_pinned() {
     local dir="$1" repo="$2" ref="$3"

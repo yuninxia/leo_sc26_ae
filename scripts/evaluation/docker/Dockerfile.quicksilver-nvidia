@@ -6,6 +6,12 @@
 ARG BASE_TAG=latest
 FROM leo-hpctoolkit-nvidia:${BASE_TAG}
 
+# nsight-systems-cli for `nsys profile` per-kernel timing in run_compare_nvidia.sh.
+# The base image's CUDA repo already provides nsight-systems-cli; we install it
+# inside the workload layer so reviewers don't need a host nsys bind-mount.
+RUN apt-get update && apt-get install -y --no-install-recommends nsight-systems-cli \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN git clone --depth 1 https://github.com/oneapi-src/Velocity-Bench.git /opt/velocity-bench
 
 # Build QuickSilver CUDA with debug info for HPCToolkit source mapping
