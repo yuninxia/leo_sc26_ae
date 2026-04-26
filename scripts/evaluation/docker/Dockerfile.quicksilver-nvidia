@@ -6,11 +6,14 @@
 ARG BASE_TAG=latest
 FROM leo-hpctoolkit-nvidia:${BASE_TAG}
 
-# nsight-systems-cli for `nsys profile` per-kernel timing in run_compare_nvidia.sh.
-# The base image's CUDA repo already provides nsight-systems-cli; we install it
-# inside the workload layer so reviewers don't need a host nsys bind-mount.
-RUN apt-get update && apt-get install -y --no-install-recommends nsight-systems-cli \
-    && rm -rf /var/lib/apt/lists/*
+# Install nsys for `nsys profile` per-kernel timing in run_compare_nvidia.sh.
+# The CUDA 12.6 apt repo (already enabled in the base image) ships nsys as
+# `cuda-nsight-systems-12-6` (NOT `nsight-systems-cli`, which doesn't exist in
+# the CUDA repo). Installing it inside the workload layer means reviewers no
+# longer need a host /usr/local/cuda bind-mount.
+RUN apt-get update && apt-get install -y --no-install-recommends cuda-nsight-systems-12-6 \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -sf /usr/local/cuda-12.6/bin/nsys /usr/local/bin/nsys
 
 RUN git clone --depth 1 https://github.com/oneapi-src/Velocity-Bench.git /opt/velocity-bench
 
