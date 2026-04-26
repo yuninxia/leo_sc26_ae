@@ -1,3 +1,6 @@
-# LULESH source clones (large repos, clone separately)
-fork/
-optimized/
+# Build artifacts only — source dirs (fork/, optimized/) are bundled
+# with the artifact (~2.6 MB total) so reviewers don't need network
+# access for benchmarks/lulesh/run_compare_*.sh.
+*.o
+*.log
+make.log
