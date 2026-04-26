@@ -1,11 +1,12 @@
 #!/bin/bash
 # runme.sh — end-to-end reviewer driver for the SC26 AE reproduction.
 #
-# Runs the Figure-5 path start-to-finish on a fresh host: check build deps,
-# install uv, uv sync, download profiling data, build the universal Docker
-# image, run collect_sdc.sh, and verify the SHA-256 against the committed
-# reference. Every step is idempotent — safe to re-run; already-done steps
-# are skipped. Total wall-clock on a clean x86_64 VM: ~35–45 min.
+# Runs the Figure-5 path start-to-finish on a fresh host: download profiling
+# data, build/pull the universal Docker image, run collect_sdc.sh inside that
+# container, and verify the SHA-256. The pipeline is fully docker-based:
+# no host-side Python environment or compiler is required. Every step is
+# idempotent — safe to re-run; already-done steps are skipped. Total
+# wall-clock on a clean x86_64 VM: ~20-30 min (Figure 5 only).
 #
 # Usage:
 #   bash scripts/runme.sh                          # Figure 5 + sha256 verify (CPU-only, ~20 min)
@@ -13,7 +14,6 @@
 #   bash scripts/runme.sh --with-table-iv          # + build NVIDIA chain, download baselines, run 15 RAJAPerf kernels (~30 min extra, GPU)
 #   bash scripts/runme.sh --with-table-iv --use-prebuilt   # everything above, but pull all images from Docker Hub (~10 min vs ~30 min)
 #   bash scripts/runme.sh --with-table-iv --gpu-arch 80    # A100 (sm_80) instead of H100/GH200 (sm_90 default)
-#   bash scripts/runme.sh --skip-preflight         # if you already installed python3-dev etc.
 #   bash scripts/runme.sh --help
 #
 # Disk requirement: Figure-5-only ≥40 GB free; with --with-table-iv ≥120 GB free
@@ -26,7 +26,6 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LEO_ROOT="$(cd "$HERE/.." && pwd)"
 cd "$LEO_ROOT"
 
-DO_PREFLIGHT=true
 DO_TABLE_IV=false
 USE_PREBUILT=false
 PREBUILT_TAG="${PREBUILT_TAG:-v0.1.13}"
@@ -34,7 +33,6 @@ TABLE_IV_VENDOR="nvidia"
 TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --skip-preflight) DO_PREFLIGHT=false; shift ;;
     --with-table-iv)  DO_TABLE_IV=true; shift ;;
     --use-prebuilt)   USE_PREBUILT=true; shift ;;
     --prebuilt-tag)   PREBUILT_TAG="$2"; shift 2 ;;
@@ -78,23 +76,19 @@ run_step() {
 ok()   { echo "    ok: $1"; }
 skip() { echo "    skip: $1"; }
 
-if [ "$DO_PREFLIGHT" = true ]; then
-  run_step "preflight (python3-dev + pkg-config + unzip)" bash "$HERE/preflight.sh" --install
-else
-  echo ""; echo "==> Step 1 skipped: --skip-preflight"
-  STEP_N=$((STEP_N + 1))
-fi
-
-run_step "install uv if missing" bash -c '
-  if command -v uv >/dev/null 2>&1; then
-    echo "uv already present: $(uv --version)"
-  else
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-  fi
-'
-export PATH="$HOME/.local/bin:$PATH"
-
-run_step "uv sync (Python env + hpcanalysis C++ build)" uv sync
+# NOTE: host-side preflight + uv install + uv sync used to live here. They
+# were redundant: leo-base-universal ships with python 3.11 + uv + GCC 12 +
+# hpcanalysis pre-built (see Dockerfile.base-universal lines 41-110), and
+# every downstream step (collect_sdc.sh, run_workload_rajaperf.sh) runs LEO
+# inside that container. Reviewers on hosts without GCC >=10 (e.g., RHEL 8.5)
+# would hit OpenMP-strict-shared compile errors here that did not exist in
+# any container path. Dropped to keep runme.sh purely docker-based.
+#
+# Reviewers who want host-side LEO (e.g., to use the Python API directly):
+#     bash scripts/preflight.sh --install   # python3-dev + pkg-config + unzip
+#     curl -LsSf https://astral.sh/uv/install.sh | sh
+#     uv sync                                # builds hpcanalysis C++ extension
+# This is independent of the AE reproduction flow.
 
 if [ -d "$LEO_ROOT/results/per-kernel" ] && [ -n "$(ls -A "$LEO_ROOT/results/per-kernel" 2>/dev/null)" ]; then
   echo ""; echo "==> Step $((STEP_N + 1)) skipped: results/ already populated ($(du -sh "$LEO_ROOT/results" | cut -f1))"
