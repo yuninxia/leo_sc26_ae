@@ -11,13 +11,17 @@
 # Usage:
 #   bash scripts/runme.sh                          # Figure 5 + sha256 verify (CPU-only, ~20 min)
 #   bash scripts/runme.sh --use-prebuilt           # pull pre-built leo-base-universal from Docker Hub (~3 min vs ~10 min build)
-#   bash scripts/runme.sh --with-table-iv          # + build NVIDIA chain, download baselines, run 15 RAJAPerf kernels (~30 min extra, GPU)
-#   bash scripts/runme.sh --with-table-iv --use-prebuilt   # everything above, but pull all images from Docker Hub (~10 min vs ~30 min)
-#   bash scripts/runme.sh --with-table-iv --gpu-arch 80    # A100 (sm_80) instead of H100/GH200 (sm_90 default)
+#   bash scripts/runme.sh --with-table-iv          # + Table IV (15 RAJAPerf kernels) + Table V (6 HPC apps), GPU required
+#   bash scripts/runme.sh --with-table-iv --use-prebuilt        # same, but pull all per-app images from Docker Hub (faster)
+#   bash scripts/runme.sh --with-table-iv --rajaperf-only       # Table IV only, skip HPC apps
+#   bash scripts/runme.sh --with-table-iv --vendor amd          # AMD MI300A path
+#   bash scripts/runme.sh --with-table-iv --vendor intel        # Intel PVC path (Kripke/QuickSilver/llama.cpp auto-skipped — no SYCL ports)
+#   bash scripts/runme.sh --with-table-iv --gpu-arch 80         # A100 (sm_80) instead of H100/GH200 (sm_90 default)
 #   bash scripts/runme.sh --help
 #
-# Disk requirement: Figure-5-only ≥40 GB free; with --with-table-iv ≥120 GB free
-# (the vendor image chain accumulates ~90 GB of intermediate layers).
+# Disk requirement: Figure-5-only ≥40 GB free; --with-table-iv (default, with HPC
+# apps) ≥250 GB free — six per-app image chains plus RAJAPerf accumulate
+# substantial intermediate layers. Use --rajaperf-only for ≥120 GB.
 #
 # Exit codes: 0 = everything verified, non-zero = a step failed.
 set -euo pipefail
@@ -27,6 +31,7 @@ LEO_ROOT="$(cd "$HERE/.." && pwd)"
 cd "$LEO_ROOT"
 
 DO_TABLE_IV=false
+DO_HPC_APPS=true     # under --with-table-iv, also run the 6 HPC apps; opt-out via --rajaperf-only
 USE_PREBUILT=false
 PREBUILT_TAG="${PREBUILT_TAG:-v0.1.18}"
 TABLE_IV_VENDOR="nvidia"
@@ -34,6 +39,7 @@ TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --with-table-iv)  DO_TABLE_IV=true; shift ;;
+    --rajaperf-only)  DO_HPC_APPS=false; shift ;;
     --use-prebuilt)   USE_PREBUILT=true; shift ;;
     --prebuilt-tag)   PREBUILT_TAG="$2"; shift 2 ;;
     --vendor)         TABLE_IV_VENDOR="$2"; shift 2 ;;
@@ -148,6 +154,68 @@ PYEOF
     else
       echo 'summary CSV not produced — check preceding step'; exit 1
     fi"
+
+  # ---------------- HPC apps (Section V, Table V apps) -----------------------
+  # Six HPC apps from the paper's Table IV/V row set, run via the appendix's
+  # `bash benchmarks/<name>/run_compare_<vendor>.sh`. Each one drives a
+  # vendor-specific Docker image (leo-<workload>-<vendor>) — pulled from
+  # Docker Hub under --use-prebuilt, otherwise built locally via
+  # build_workload_image.sh. Per appendix § AE Computation Map, Intel SYCL
+  # ports for Kripke / QuickSilver / llama.cpp do not exist; those are
+  # skipped on --vendor intel.
+  if [ "$DO_HPC_APPS" = true ]; then
+    declare -A HPC_SCRIPTS=(
+      [lulesh]="run_compare_<vendor>.sh"
+      [minibude]="run_compare.sh --vendor <vendor>"
+      [xsbench]="run_compare_<vendor>.sh"
+      [quicksilver]="run_compare_<vendor>.sh"
+      [kripke]="run_compare_<vendor>.sh"
+      [llamacpp]="run_compare_<vendor>.sh"
+    )
+    declare -A HPC_VENDORS=(
+      [lulesh]="amd nvidia intel"
+      [minibude]="amd nvidia intel"
+      [xsbench]="amd nvidia intel"
+      [quicksilver]="amd nvidia"
+      [kripke]="amd nvidia"
+      [llamacpp]="amd nvidia"
+    )
+
+    run_hpc_app() {
+      local app="$1"
+      local supported="${HPC_VENDORS[$app]}"
+      if ! echo " $supported " | grep -q " $TABLE_IV_VENDOR "; then
+        run_step "skip $app (no $TABLE_IV_VENDOR port — see appendix § AE Computation Map)" \
+          bash -c "echo 'Skipped: $app has no $TABLE_IV_VENDOR port. Supported vendors: $supported.'"
+        return 0
+      fi
+
+      # Pull or build the workload image (idempotent — pull/build script
+      # short-circuits when the image already exists locally).
+      if docker image inspect "leo-${app}-${TABLE_IV_VENDOR}:latest" >/dev/null 2>&1; then
+        run_step "leo-${app}-${TABLE_IV_VENDOR} already present (skipping pull/build)" \
+          bash -c "echo 'leo-${app}-${TABLE_IV_VENDOR}:latest exists — skipping pull/build.'" || true
+      elif [ "$USE_PREBUILT" = true ]; then
+        run_step "pull leo-${app}-${TABLE_IV_VENDOR}:${PREBUILT_TAG} from Docker Hub" \
+          bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads "base,hpctoolkit,$app" --tag "$PREBUILT_TAG" || true
+      else
+        run_step "build leo-${app}-${TABLE_IV_VENDOR} (3-layer chain)" \
+          env GPU_ARCH="$TABLE_IV_GPU_ARCH" \
+          bash "$HERE/evaluation/build_workload_image.sh" "$TABLE_IV_VENDOR" "$app" || true
+      fi
+
+      # Resolve the run-compare script path (minibude is the only one that
+      # uses a single multi-vendor script with --vendor).
+      local cmd_template="${HPC_SCRIPTS[$app]}"
+      local cmd="${cmd_template//<vendor>/$TABLE_IV_VENDOR}"
+      run_step "Table V ${app} ${TABLE_IV_VENDOR}: bash benchmarks/${app}/${cmd}" \
+        bash -c "cd '$LEO_ROOT' && bash benchmarks/${app}/${cmd}" || true
+    }
+
+    for app in lulesh minibude xsbench quicksilver kripke llamacpp; do
+      run_hpc_app "$app"
+    done
+  fi
 fi
 
 END_ALL=$(date +%s)
@@ -170,11 +238,18 @@ echo "    Per-step:  $LOG_DIR/step*.log"
 echo "    Master:    $MASTER_LOG"
 echo ""
 if [ "$DO_TABLE_IV" = true ]; then
-  echo "  Optional HPC apps (not auto-run): miniBUDE, XSBench, Kripke, LULESH, llama.cpp, QuickSilver."
-  echo "    bash scripts/evaluation/build_workload_image.sh ${TABLE_IV_VENDOR} <workload>"
-  echo "    bash benchmarks/<workload>/run_compare*.sh"
+  if [ "$DO_HPC_APPS" = true ]; then
+    echo "  HPC apps (Section V, Table V): auto-run for ${TABLE_IV_VENDOR}."
+    echo "    Per-app step logs in $LOG_DIR/step*Table_V*.log"
+    echo "    Note: HipKittens (Section VI.D, AMD-only RMSNorm) is not in Table IV/V"
+    echo "    and is not auto-run. See benchmarks/hipkittens/ if added in a future release."
+  else
+    echo "  HPC apps skipped (--rajaperf-only). To run them later:"
+    echo "    bash benchmarks/<workload>/run_compare_${TABLE_IV_VENDOR}.sh"
+  fi
 else
   echo "  Next (optional, requires GPU): add --with-table-iv to also build"
-  echo "  the per-vendor RAJAPerf chain and reproduce Table IV (15 kernels)."
+  echo "  the per-vendor RAJAPerf chain and reproduce Table IV (15 RAJAPerf"
+  echo "  kernels) plus Table V's 6 HPC apps in one unified flow."
 fi
 echo "============================================================"
