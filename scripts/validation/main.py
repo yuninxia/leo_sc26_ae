@@ -4,16 +4,13 @@
 Usage:
   uv run python -m scripts.validation.main
   uv run python -m scripts.validation.main --rerun-leo
-  uv run python -m scripts.validation.main --llm-eval --llm-log results/llm_eval.log
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
-from dataclasses import asdict
 from pathlib import Path
 
 from .constants import (
@@ -24,9 +21,8 @@ from .core import (
     find_latest_result_dir,
     validate_kernel, validate_realworld_app,
 )
-from .formatting import format_report, export_diffs
+from .formatting import format_report
 from .leo_rerun import RerunTask, batch_rerun_leo_docker
-from .llm_eval import LLMEvalResult, load_env, run_llm_eval, format_llm_report
 
 
 def main():
@@ -56,29 +52,6 @@ def main():
     parser.add_argument(
         "--json", action="store_true",
         help="Also emit machine-readable JSON",
-    )
-    parser.add_argument(
-        "--export-diffs", type=Path, default=None,
-        metavar="DIR",
-        help="Export per-kernel Leo + diff files for LLM evaluation",
-    )
-    parser.add_argument(
-        "--llm-eval", action="store_true",
-        help="Run LLM semantic evaluation via OpenRouter",
-    )
-    parser.add_argument(
-        "--llm-model", type=str, default="google/gemini-3.1-pro-preview",
-        help="OpenRouter model ID (default: google/gemini-3.1-pro-preview — matches Table V). "
-             "If this slug is deprecated, pass a current Gemini 3.x slug from https://openrouter.ai/models.",
-    )
-    parser.add_argument(
-        "--llm-concurrency", type=int, default=5,
-        help="Max concurrent LLM API requests (default: 5)",
-    )
-    parser.add_argument(
-        "--llm-log", type=Path, default=None,
-        metavar="FILE",
-        help="Log raw LLM responses to file for debugging",
     )
     args = parser.parse_args()
 
@@ -233,51 +206,6 @@ def main():
 
         Path(json_path).write_text(json.dumps(json_data, indent=2))
         print(f"JSON written to {json_path}", file=sys.stderr)
-
-    # Export diffs
-    if args.export_diffs:
-        export_diffs(all_results, args.export_diffs)
-
-    # LLM semantic evaluation
-    if args.llm_eval:
-        load_env()
-        api_key = os.environ.get("OPENROUTER_API_KEY")
-        if not api_key:
-            print("ERROR: OPENROUTER_API_KEY not found. Set in .env or environment.",
-                  file=sys.stderr)
-            sys.exit(1)
-
-        eval_results = run_llm_eval(all_results, args.llm_model, args.llm_concurrency,
-                                    log_path=args.llm_log)
-        llm_report = format_llm_report(eval_results, args.llm_model)
-
-        if args.output:
-            # Append to the output file
-            with open(args.output, "a") as f:
-                f.write(llm_report)
-            print(f"LLM report appended to {args.output}", file=sys.stderr)
-        else:
-            print(llm_report)
-
-        # Include in JSON output
-        if args.json:
-            json_path = args.output.replace(".txt", ".json") if args.output else "validation_results.json"
-            # Re-read and extend existing JSON
-            existing = json.loads(Path(json_path).read_text())
-            existing["llm_eval"] = {
-                "model": args.llm_model,
-                "results": [asdict(er) for er in eval_results],
-                "summary": {
-                    "total": len(eval_results),
-                    "scored": len([er for er in eval_results if not er.error]),
-                    "avg_score": (
-                        sum(er.match_quality for er in eval_results if not er.error)
-                        / max(1, len([er for er in eval_results if not er.error]))
-                    ),
-                },
-            }
-            Path(json_path).write_text(json.dumps(existing, indent=2))
-            print(f"LLM eval results added to {json_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

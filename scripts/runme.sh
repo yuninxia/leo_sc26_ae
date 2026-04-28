@@ -60,14 +60,18 @@ run_step() {
   local log="$LOG_DIR/step${STEP_N}_${slug}.log"
   local t0 t1
   echo ""
+  echo "============================================================"
   echo "==> [$(date +%H:%M:%S)] Step ${STEP_N}: $name"
   echo "    log: $log"
+  echo "============================================================"
   t0=$(date +%s)
   if "$@" 2>&1 | tee "$log"; then
     t1=$(date +%s)
+    echo ""
     echo "    ok (${name}): $((t1 - t0))s"
   else
     t1=$(date +%s)
+    echo ""
     echo "    FAIL (${name}) after $((t1 - t0))s — see $log"
     return 1
   fi
@@ -91,15 +95,15 @@ skip() { echo "    skip: $1"; }
 # This is independent of the AE reproduction flow.
 
 if [ -d "$LEO_ROOT/results/per-kernel" ] && [ -n "$(ls -A "$LEO_ROOT/results/per-kernel" 2>/dev/null)" ]; then
-  echo ""; echo "==> Step $((STEP_N + 1)) skipped: results/ already populated ($(du -sh "$LEO_ROOT/results" | cut -f1))"
-  STEP_N=$((STEP_N + 1))
+  run_step "profiling data already populated (skipping download)" bash -c \
+    "echo 'results/ exists with $(du -sh "$LEO_ROOT/results" 2>/dev/null | cut -f1) — skipping download_data.sh.'"
 else
   run_step "download pre-collected profiling data (~1 GB compressed, ~5.6 GB extracted)" bash "$HERE/download_data.sh"
 fi
 
 if docker image inspect leo-base-universal:latest >/dev/null 2>&1; then
-  echo ""; echo "==> Step $((STEP_N + 1)) skipped: leo-base-universal:latest already built"
-  STEP_N=$((STEP_N + 1))
+  run_step "leo-base-universal already present (skipping pull/build)" bash -c \
+    "echo 'leo-base-universal:latest is at $(docker image inspect --format \"{{.Id}}\" leo-base-universal:latest) — skipping pull/build.'"
 elif [ "$USE_PREBUILT" = true ]; then
   run_step "pull pre-built leo-base-universal:${PREBUILT_TAG} from Docker Hub (~2 min)" \
     bash "$HERE/evaluation/pull_prebuilt_images.sh" --workloads base-universal --tag "$PREBUILT_TAG"
@@ -110,7 +114,7 @@ fi
 SDC_OUT="$LOG_DIR/sdc_output.txt"
 run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sdc.sh' > '$SDC_OUT' 2>&1 && tail -25 '$SDC_OUT'"
 
-run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256"
+run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256 && echo 'SHA-256 of sdc_coverage_reference.txt matched the committed paper reference.'"
 
 if [ "$DO_TABLE_IV" = true ]; then
   if [ "$USE_PREBUILT" = true ]; then
@@ -148,24 +152,29 @@ fi
 
 END_ALL=$(date +%s)
 echo ""
-echo "====================================================================="
-echo "  DONE. Figure 5 reproduced and verified (sha256 OK)."
+echo "============================================================"
+echo "  RUNME COMPLETE"
+echo "============================================================"
+echo ""
+echo "  Wall-clock: $(( (END_ALL - START_ALL) / 60 )) min $(( (END_ALL - START_ALL) % 60 )) s"
+echo ""
+echo "  Outputs:"
+echo "    Figure 5 SDC table:        $SDC_OUT"
+echo "    Figure 5 SHA-256 verified: OK (against committed reference)"
 if [ "$DO_TABLE_IV" = true ]; then
-  echo "  Table IV ${TABLE_IV_VENDOR} RAJAPerf also reproduced."
+  echo "    Table IV CSV (${TABLE_IV_VENDOR}):      $LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv"
+fi
+echo ""
+echo "  Logs:"
+echo "    Per-step:  $LOG_DIR/step*.log"
+echo "    Master:    $MASTER_LOG"
+echo ""
+if [ "$DO_TABLE_IV" = true ]; then
   echo "  Optional HPC apps (not auto-run): miniBUDE, XSBench, Kripke, LULESH, llama.cpp, QuickSilver."
   echo "    bash scripts/evaluation/build_workload_image.sh ${TABLE_IV_VENDOR} <workload>"
   echo "    bash benchmarks/<workload>/run_compare*.sh"
+else
+  echo "  Next (optional, requires GPU): add --with-table-iv to also build"
+  echo "  the per-vendor RAJAPerf chain and reproduce Table IV (15 kernels)."
 fi
-echo "  Total wall-clock: $(( (END_ALL - START_ALL) / 60 )) min $(( (END_ALL - START_ALL) % 60 )) s"
-echo "  Per-step logs: $LOG_DIR"
-echo ""
-echo "  Next (optional, requires GPU):"
-echo "    Table IV NVIDIA:  docker build --build-arg GPU_ARCH=<sm> \\"
-echo "                        -f scripts/evaluation/docker/Dockerfile.rajaperf-nvidia \\"
-echo "                        -t leo-rajaperf-nvidia ."
-echo "                      bash scripts/evaluation/run_workload_rajaperf.sh \\"
-echo "                        --kernel MASS3DEA,LTIMES,3MM --vendor nvidia"
-echo "    Table V LLM:      export OPENROUTER_API_KEY=...; "
-echo "                      uv run python -m scripts.validation.main --llm-eval \\"
-echo "                        --llm-model google/gemini-3.1-pro-preview"
-echo "====================================================================="
+echo "============================================================"

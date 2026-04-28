@@ -101,16 +101,6 @@ This is expected behavior of the Activity API (documented in the paper, Section 
 2. Kernel repetition count: RAJAPerf uses internal warmup + specific rep counts
 3. Per-kernel GPU time (nsys/rocprofv3/unitrace), not wall-clock
 
-## LLM Reproduction (Table V)
-
-### Gemini API rate limits
-
-Gemini 3.1 Pro (via OpenRouter) has per-minute QPS limits. Reduce concurrency via `--llm-concurrency 2` on `python -m scripts.validation.main --llm-eval`.
-
-### LLM outputs vary across runs
-
-**Expected.** The paper uses k=5 trials and reports best-of-k. Overall geomean (1.29× for C+L(S)) and 100% compile rate should hold, but per-kernel speedups may vary ±0.1×.
-
 ## Still Stuck?
 
 Contact: yuning.xia@rice.edu

@@ -12,8 +12,7 @@ This repository contains the LEO analysis tool, evaluation infrastructure, bench
 ## What This Artifact Reproduces
 
 - **Table IV** — Per-kernel speedups for 21 workloads × 3 GPU platforms (NVIDIA GH200, AMD MI300A, Intel GPU Max 1100)
-- **Table V** — LLM diagnostic context ablation (Gemini 3.1 Pro)
-- **Figure 5** — Single-Dependency Coverage (SDC) across vendors
+- **Figure 5** — Single Dependency Coverage (SDC) across vendors
 - **Section VI case studies** — MASS3DEA, miniBUDE, QuickSilver, ML kernels (llama.cpp, HipKittens), Kripke
 
 ---
@@ -74,10 +73,6 @@ Three Zenodo records back this artifact:
 - **Pre-built Docker images** (NVIDIA chain, ~12 GB, Apache-2.0): [10.5281/zenodo.19752199](https://doi.org/10.5281/zenodo.19752199) — mirror of `jssonxia/leo-*-nvidia` on Docker Hub. `gunzip -c leo-sc26-ae-images-v0.1.14.tar.gz | docker load` to skip the ~30 min build.
 
 `download_data.sh` primarily pulls from the GitHub Release `v1.0-sc26-data`; if the GitHub URL is unreachable (e.g., the source repo is temporarily private), it automatically falls back to the Zenodo data mirror.
-
-### LLM API (optional, Table V only)
-
-Reproducing Table V requires **Gemini 3.1 Pro** via the OpenRouter proxy (https://openrouter.ai). Set `OPENROUTER_API_KEY` in your environment. Table IV and Figure 5 do not need LLM access.
 
 ---
 
@@ -179,27 +174,14 @@ Optimization patches for each case study are in `benchmarks/*/optimized/`. To se
   benchmark's top-level `README.md` lists the upstream URL and the patch/file
   pair that reproduces the Leo-guided change.
 
-### Task 4: LLM diagnostic study (Table V, optional)
-
-Reproduces the Table V **semantic-match** numbers (how well the LLM, given each diagnostic context, identifies the optimization site). The paper's **speedup** column additionally requires compiling and benchmarking LLM-generated kernels on GPUs and is out of scope for CPU-only reviewers.
-
-```bash
-export OPENROUTER_API_KEY=your_key_here    # obtain from openrouter.ai
-uv run python -m scripts.validation.main \
-    --llm-eval \
-    --llm-model google/gemini-3.1-pro \
-    --llm-log results/llm_eval.log
-```
-
-Routes to Gemini 3.1 Pro via OpenRouter. Reduce `--llm-concurrency` (default 5) if you hit per-minute rate limits. Pre-collected LLM outputs are included in the artifact for reference.
-
 ---
 
 ## Expected Results (Tolerance)
 
 - **Table IV speedups:** ±5% on NVIDIA GH200 and AMD MI300A (median CV < 1%); ±9% on Intel PVC (median CV ~9%)
 - **Figure 5 SDC coverage (before → after pruning):** NVIDIA 30–74% → 64–94%; AMD 80–97%; Intel PVC stable at 61–89% (exact values within rounding)
-- **Table V (semantic-match proxy only):** The bundled `--llm-eval` path reproduces Table V's semantic-match evaluation (does the LLM identify the same root cause LEO ranks first?) with per-kernel scores subject to LLM sampling variance. The paper's Compilable / Speedup / Regressions columns come from a separate compile-and-benchmark harness not bundled here and are *not* reproduced by this path.
+
+Table V (LLM diagnostic study) is **not** reproduced by this artifact: the numeric Compilable / Speedup / Regressions columns require a GPU-side compile-and-benchmark harness and a paid OpenRouter subscription, and the LLM outputs are non-deterministic. The corresponding code has been removed from the artifact; see the AD appendix Badges-requested paragraph.
 
 ---
 
@@ -207,7 +189,6 @@ Routes to Gemini 3.1 Pro via OpenRouter. Reduce `--llm-concurrency` (default 5) 
 
 - Pre-collected data on Zenodo may have slightly different timestamps than those in the paper but produces identical LEO analysis output.
 - Intel PVC results exhibit higher run-to-run variability (documented 9% CV); ±9% tolerance recommended.
-- LLM study is non-deterministic. The semantic-match evaluation (`--llm-eval`) reports a 0–100 score per kernel/vendor — per-pair values may vary ±10 across runs, but overall trends (relative ranking of diagnostic contexts) reproduce. The paper's best-of-5 speedup column was produced by a separate compile-and-benchmark harness that requires GPUs and is not included here.
 
 ---
 

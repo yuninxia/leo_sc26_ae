@@ -62,10 +62,19 @@ def run_and_extract(meas_path, arch):
 
 
 def main():
-    # Header
+    # Header — Figure 5 in the paper. Columns are per-vendor SDC (Single
+    # Dependency Coverage) percentages: the fraction of stalled instructions
+    # whose root cause LEO can attribute to a single dependency, before vs.
+    # after LEO's pruning pipeline. Higher is better; bigger improvement
+    # (before → after) means LEO recovers more attributable dependencies.
+    print("============================================================")
+    print("  Figure 5: Single Dependency Coverage (SDC) by GPU Vendor")
+    print("  Improvement from LEO's analysis pipeline; values are")
+    print("  before → after (higher is better)")
+    print("============================================================")
     print(f"{'Kernel':<20} {'NVIDIA':>16} {'AMD':>16} {'Intel':>16}")
-    print(f"{'':20} {'before→after':>16} {'before→after':>16} {'before→after':>16}")
-    print("=" * 70)
+    print(f"{'':20} {'SDC % b→a':>16} {'SDC % b→a':>16} {'SDC % b→a':>16}")
+    print("-" * 70)
 
     def fmt(result):
         if result is None:
