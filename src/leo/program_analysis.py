@@ -357,7 +357,7 @@ class ProgramAnalysisResult:
         table.add_section_header(f"TOP {displayed_kernels} KERNELS BY {self.kernel_sort_metric.upper().replace('_', ' ')}")
         table.add_separator("-")
         has_occ = any(k.occupancy is not None for k in self.per_kernel_results[:top_kernels])
-        has_sps = any(k.samples_per_second > 0 for k in self.per_kernel_results[:top_kernels])
+        has_util = any(k.gpu_utilization_pct > 0 for k in self.per_kernel_results[:top_kernels])
         columns = [
             ("#", 3, "<"),
             ("Kernel", 40, "<"),
@@ -367,8 +367,8 @@ class ProgramAnalysisResult:
         ]
         if has_occ:
             columns.append(("Occupancy", 18, ">"))
-        if has_sps:
-            columns.append(("Sample Rate", 18, ">"))
+        if has_util:
+            columns.append(("GPU Util", 10, ">"))
         table.add_columns(columns)
         table.add_separator("-")
 
@@ -390,12 +390,9 @@ class ProgramAnalysisResult:
                     row_values.append(f"{occ.occupancy_pct:>3.0f}% ({occ.limiting_factor})")
                 else:
                     row_values.append("-")
-            if has_sps:
-                if kernel.samples_per_second > 0:
-                    if kernel.gpu_utilization_pct > 0:
-                        row_values.append(f"{_format_rate(kernel.samples_per_second)} / {kernel.gpu_utilization_pct:.0f}%")
-                    else:
-                        row_values.append(_format_rate(kernel.samples_per_second))
+            if has_util:
+                if kernel.gpu_utilization_pct > 0:
+                    row_values.append(f"{kernel.gpu_utilization_pct:.0f}%")
                 else:
                     row_values.append("-")
             table.add_row(*row_values)

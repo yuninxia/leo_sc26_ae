@@ -18,6 +18,7 @@ Example:
 """
 
 import bisect
+import logging
 import re
 import subprocess
 import xml.etree.ElementTree as ET
@@ -199,6 +200,7 @@ class AnalysisResult:
     stats: dict = field(default_factory=dict)
     quality: Optional[QualityAssessment] = None
     resolved_kernel_name: Optional[str] = None  # Set by program_analysis after offset-based resolution
+    footnotes: List[str] = field(default_factory=list)  # Captured WARNING-level messages from pruning passes
 
     def __post_init__(self):
         """Build sorted PC list for nearest-neighbor source lookup."""
@@ -585,7 +587,7 @@ class AnalysisResult:
         # Calculate dynamic column widths based on actual data
         W_CYCLES = 18    # Cycles column
         W_PCT = 8        # % Total column
-        W_SPD = 8        # Speedup column
+        W_SPD = 12       # Est. Speedup column (Amdahl's-law estimate)
 
         # Find max location lengths (with minimum for headers)
         max_stall_loc = max((len(s[0]) for s in source_data), default=14)
@@ -623,7 +625,7 @@ class AnalysisResult:
         table.add_footer()
         table.add_blank_line()
 
-        table.add_section_header("STALL ANALYSIS (PC Sampling \u2192 Back-slicing \u2192 Root Cause)")
+        table.add_section_header("STALL ANALYSIS (PC Sampling \u2192 Back-slicing \u2192 Root Cause) [Hot path in a tree of dependency chains]")
         table.add_separator("-")
 
         # Column headers (custom format due to arrow column)
@@ -635,7 +637,7 @@ class AnalysisResult:
             f"{'Root Opcode':<{W_CAUSE_OP}}"
             f"{'Cycles':>{W_CYCLES}}"
             f"{'% Total':>{W_PCT}}"
-            f"{'Speedup':>{W_SPD}}"
+            f"{'Est. Speedup':>{W_SPD}}"
         )
         table.add_line(header)
         table.add_separator("-")
@@ -670,27 +672,62 @@ class AnalysisResult:
         ]
         if multi_hop_chains:
             table.add_blank_line()
-            table.add_section_header("DEPENDENCY CHAINS (multi-hop root cause paths)")
+            table.add_section_header("BACKWARD SLICE OF ROOT CAUSE DEPENDENCY CHAINS [the tree of chains]")
             table.add_separator("-")
 
-            for chain in multi_hop_chains[:top_n]:
-                # Format: stall_op <- intermediate_op <- ... <- root_cause_op   cycles
-                parts = []
-                for node in chain.nodes:
-                    op_display = node.opcode
-                    if self.config.vendor == "intel":
-                        op_display = annotate_intel_opcode(op_display)
-                    loc = self.get_source_location(node.pc, nearest=True, include_column=True)
-                    if loc:
-                        filename = extract_filename(loc[0])
-                        loc_str = format_source_location(filename, loc[1], loc[2] if len(loc) > 2 else 0, short=False)
-                        parts.append(f"{op_display} @ {loc_str}")
-                    else:
-                        parts.append(f"{op_display}")
-                chain_str = " \u2190 ".join(parts)
-                blame_str = f"{chain.total_blame:,.0f}"
-                table.add_line(f"  {chain_str}  {blame_str:>10}")
+            # Build a prefix tree of the top-N chains so chains sharing a stall
+            # op (or a shared intermediate node) collapse into a single branching
+            # subtree.  Each tree node carries the original ChainNode plus the
+            # blame attributable to chains terminating at or below it.
+            def _node_display(chain_node):
+                op_display = chain_node.opcode
+                if self.config.vendor == "intel":
+                    op_display = annotate_intel_opcode(op_display)
+                loc = self.get_source_location(chain_node.pc, nearest=True, include_column=True)
+                if loc:
+                    filename = extract_filename(loc[0])
+                    loc_str = format_source_location(filename, loc[1], loc[2] if len(loc) > 2 else 0, short=False)
+                    return f"{op_display} @ {loc_str}"
+                return op_display
 
+            tree_root = {"children": {}, "node": None, "blame": 0.0}
+            for chain in multi_hop_chains[:top_n]:
+                cur = tree_root
+                for cn in chain.nodes:
+                    if cn.pc not in cur["children"]:
+                        cur["children"][cn.pc] = {"children": {}, "node": cn, "blame": 0.0}
+                    cur = cur["children"][cn.pc]
+                cur["blame"] += chain.total_blame
+
+            def _render(node, prefix, is_last):
+                glyph = "\u2514\u2500 " if is_last else "\u251c\u2500 "  # \u2514\u2500 / \u251c\u2500
+                line = f"  {prefix}{glyph}{_node_display(node['node'])}"
+                if not node["children"]:  # leaf: append blame
+                    blame_str = f"{node['blame']:,.0f}"
+                    line = f"{line}  {blame_str:>10}"
+                table.add_line(line)
+                next_prefix = prefix + ("   " if is_last else "\u2502  ")  # "\u2502  "
+                children = list(node["children"].values())
+                for i, child in enumerate(children):
+                    _render(child, next_prefix, i == len(children) - 1)
+
+            top_children = list(tree_root["children"].values())
+            for i, child in enumerate(top_children):
+                _render(child, "", i == len(top_children) - 1)
+
+            table.add_separator("-")
+
+        # ANALYSIS FOOTNOTES — pruning warnings captured during back-slicing.
+        # These were emitted as logger.warning() in leo.analysis.graph during
+        # opcode pruning. Surfacing them here (instead of mid-output) keeps the
+        # main report clean while still informing reviewers about conservative
+        # fallbacks taken on edges where stall breakdown was unavailable.
+        if self.footnotes:
+            table.add_blank_line()
+            table.add_section_header("ANALYSIS FOOTNOTES")
+            table.add_separator("-")
+            for fn in self.footnotes:
+                table.add_line(f"  • {fn}")
             table.add_separator("-")
 
         table.add_footer()
@@ -1010,14 +1047,37 @@ class KernelAnalyzer:
             debug=self.config.debug,
         )
 
-        # Step 10: Run back-slicing analysis
-        engine = BackSliceEngine(
-            vma_map=self._vma_map,
-            instructions=all_instructions,
-            cfg=self._cfg,
-            config=bs_config,
-        )
-        backslice_result = engine.analyze()
+        # Step 10: Run back-slicing analysis. Capture WARNING-level records
+        # emitted by the prune_*_constraints functions (in leo.analysis.graph)
+        # so they can be rendered as ANALYSIS FOOTNOTES at the bottom of the
+        # report instead of in the middle of analysis output where they look
+        # like errors. Captured records still propagate to debug-mode logger
+        # output via the parent logger.
+        class _PruningFootnoteCapture(logging.Handler):
+            def __init__(self):
+                super().__init__(level=logging.WARNING)
+                self.messages: List[str] = []
+
+            def emit(self, record: logging.LogRecord) -> None:
+                try:
+                    self.messages.append(record.getMessage())
+                except Exception:
+                    pass
+
+        _graph_logger = logging.getLogger("leo.analysis.graph")
+        _footnote_capture = _PruningFootnoteCapture()
+        _graph_logger.addHandler(_footnote_capture)
+        try:
+            engine = BackSliceEngine(
+                vma_map=self._vma_map,
+                instructions=all_instructions,
+                cfg=self._cfg,
+                config=bs_config,
+            )
+            backslice_result = engine.analyze()
+        finally:
+            _graph_logger.removeHandler(_footnote_capture)
+        analysis_footnotes = _footnote_capture.messages
 
         # Step 11: Collect stats
         dep_stats = get_dependency_stats(all_instructions)
@@ -1059,6 +1119,7 @@ class KernelAnalyzer:
             source_mapping=self._source_mapping,
             stats=stats,
             quality=quality,
+            footnotes=analysis_footnotes,
         )
 
     def _build_merged_cfg(self, all_functions: list) -> CFG:
