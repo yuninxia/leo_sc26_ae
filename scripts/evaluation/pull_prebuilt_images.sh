@@ -56,6 +56,22 @@ for wl in "${WL_ARRAY[@]}"; do
         # find the image without needing the registry prefix.
         docker tag "$image" "$localtag"
         echo "    tagged as $localtag"
+    elif [[ "$TAG" != "latest" ]]; then
+        # Fallback to :latest. Vendor images (rajaperf/lulesh/etc.) are stable
+        # across LEO releases — they don't bake the LEO source — so :latest is
+        # equivalent to the most recent versioned tag. Only leo-base-universal
+        # carries LEO; for that one we always have a versioned tag pushed.
+        fallback="${REGISTRY}/leo-${wl}-${VENDOR}:latest"
+        [[ "$wl" == "base-universal" ]] && fallback="${REGISTRY}/leo-base-universal:latest"
+        echo "    primary tag :${TAG} unavailable; trying :latest fallback"
+        echo "    $fallback"
+        if docker pull "$fallback" 2>&1 | tail -3; then
+            docker tag "$fallback" "$localtag"
+            echo "    tagged as $localtag (from :latest fallback)"
+        else
+            echo "    WARN: both :${TAG} and :latest pulls failed — fall back to build:"
+            echo "          bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
+        fi
     else
         echo "    WARN: pull failed — fall back to build:"
         echo "          bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
