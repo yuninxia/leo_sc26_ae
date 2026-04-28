@@ -66,21 +66,27 @@ if [ "$SHOW_DIFF" = true ]; then
     exit 0
 fi
 
-# ==================== Vendor detection ====================
+# ==================== Vendor / image derivation ====================
+# Either --vendor or --docker is sufficient — we cross-derive whichever is missing
+# so reviewers can write `--vendor amd` and runme.sh's HPC apps loop works.
 if [ -z "$VENDOR" ] && [ -n "$DOCKER_IMAGE" ]; then
     if [[ "$DOCKER_IMAGE" == *intel* ]]; then VENDOR="intel"
     elif [[ "$DOCKER_IMAGE" == *amd* ]]; then VENDOR="amd"
     elif [[ "$DOCKER_IMAGE" == *nvidia* ]]; then VENDOR="nvidia"
     fi
 fi
+if [ -n "$VENDOR" ] && [ -z "$DOCKER_IMAGE" ]; then
+    DOCKER_IMAGE="leo-minibude-${VENDOR}"
+fi
 
 if [ -z "$VENDOR" ]; then
-    echo "ERROR: --docker <image> required (e.g., leo-minibude-amd)"
+    echo "ERROR: --vendor <amd|nvidia|intel> or --docker <image> required"
     echo ""
     echo "Usage:"
-    echo "  ./run_compare.sh --docker leo-minibude-amd"
-    echo "  ./run_compare.sh --docker leo-minibude-amd --deck bm1 -w 64"
-    echo "  ./run_compare.sh --docker leo-minibude-amd --profile"
+    echo "  ./run_compare.sh --vendor amd                    # uses leo-minibude-amd"
+    echo "  ./run_compare.sh --docker leo-minibude-amd       # equivalent"
+    echo "  ./run_compare.sh --vendor amd --deck bm1 -w 64"
+    echo "  ./run_compare.sh --vendor amd --profile"
     echo "  ./run_compare.sh --diff"
     exit 1
 fi
