@@ -28,7 +28,7 @@ cd "$LEO_ROOT"
 
 DO_TABLE_IV=false
 USE_PREBUILT=false
-PREBUILT_TAG="${PREBUILT_TAG:-v0.1.17}"
+PREBUILT_TAG="${PREBUILT_TAG:-v0.1.18}"
 TABLE_IV_VENDOR="nvidia"
 TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
