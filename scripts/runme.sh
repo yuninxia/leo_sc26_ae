@@ -122,6 +122,34 @@ run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sd
 
 run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256 && echo 'SHA-256 of sdc_coverage_reference.txt matched the committed paper reference.'"
 
+# ---------------- Per-kernel LEO root-cause demo (canonical: MASS3DEA) -------
+# Show reviewers what LEO's per-kernel output looks like — this is the
+# headline diagnostic table (STALL ANALYSIS, Est. Speedup column, hatchet-style
+# BACKWARD SLICE chain tree, ANALYSIS FOOTNOTES). Pure CPU; reads pre-collected
+# HPCToolkit data, no GPU needed. One invocation per vendor (NVIDIA H100,
+# AMD MI300, Intel PVC) showcases the cross-vendor analysis.
+demo_kernel_one_vendor() {
+  local vendor="$1" arch="$2" label="$3"
+  local data="$LEO_ROOT/results/per-kernel/Apps_MASS3DEA/${vendor}/hpctoolkit-raja-perf.exe-measurements"
+  local parent="$LEO_ROOT/results/per-kernel/Apps_MASS3DEA/${vendor}"
+  if [ ! -d "$data" ]; then
+    run_step "Per-kernel LEO demo: ${label} MASS3DEA (skipped — no data)" \
+      bash -c "echo 'Profile data not present at $data; skipping demo for ${label}.'"
+    return 0
+  fi
+  run_step "Per-kernel LEO demo: ${label} MASS3DEA (analyze_benchmark.py)" \
+    bash -c "docker run --rm \
+      -v '$LEO_ROOT/src/leo:/opt/leo/src/leo:ro' \
+      -v '$LEO_ROOT/scripts:/opt/leo/scripts:ro' \
+      -v '$parent':/data:ro \
+      -e PYTHONWARNINGS=ignore::SyntaxWarning \
+      leo-base-universal -c \
+      'uv run --quiet python scripts/analyze_benchmark.py /data/hpctoolkit-raja-perf.exe-measurements --top-n 5 --arch $arch'"
+}
+demo_kernel_one_vendor nvidia h100  "NVIDIA H100"
+demo_kernel_one_vendor amd    mi300 "AMD MI300"
+demo_kernel_one_vendor intel  pvc   "Intel PVC"
+
 if [ "$DO_TABLE_IV" = true ]; then
   if [ "$USE_PREBUILT" = true ]; then
     run_step "pull pre-built leo-rajaperf-${TABLE_IV_VENDOR}:${PREBUILT_TAG} from Docker Hub (~3-5 min)" \
