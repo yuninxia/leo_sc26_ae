@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Collect per-kernel Single Dependency Coverage for all Table IV workloads."""
 
+import warnings
+# Suppress hpcanalysis compile-time SyntaxWarnings (`\(` regex escape sequences
+# in queries.py). Harmless on supported Python versions; just clutters output.
+warnings.filterwarnings("ignore", category=SyntaxWarning, module=r"hpcanalysis\..*")
+
 import subprocess
 import re
 import os

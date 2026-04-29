@@ -20,7 +20,13 @@ Examples:
 
 import argparse
 import sys
+import warnings
 from pathlib import Path
+
+# Suppress hpcanalysis compile-time SyntaxWarnings (`\(` regex escape sequences
+# in queries.py). Harmless on supported Python versions; just clutters output.
+# Must run before any indirect import of hpcanalysis.
+warnings.filterwarnings("ignore", category=SyntaxWarning, module=r"hpcanalysis\..*")
 
 # Add src to path for development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))

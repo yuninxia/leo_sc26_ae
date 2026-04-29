@@ -587,7 +587,7 @@ class AnalysisResult:
         # Calculate dynamic column widths based on actual data
         W_CYCLES = 18    # Cycles column
         W_PCT = 8        # % Total column
-        W_SPD = 12       # Est. Speedup column (Amdahl's-law estimate)
+        W_SPD = 13       # Est. Speedup column (12-char header + 1-space gap from % Total)
 
         # Find max location lengths (with minimum for headers)
         max_stall_loc = max((len(s[0]) for s in source_data), default=14)
