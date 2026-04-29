@@ -172,14 +172,31 @@ if [ -n "$DOCKER_IMAGE" ] && [ ! -f /.dockerenv ]; then
         echo "    $SCRIPT_DIR/rajaperf-compare-raw.csv ($((RAW_LINES - 1)) samples)"
         echo "    $SCRIPT_DIR/rajaperf-compare-summary.csv"
 
-        # Post-process: drop cold-start passes and compute robust statistics
-        # Uses only stdlib (csv, statistics), so system python3 is sufficient.
-        # Prefer system python3 over uv to avoid x86/ARM venv mismatch on GH200.
+        # Post-process: drop cold-start passes and compute robust statistics.
+        # Uses only stdlib (csv, statistics) but needs Python ≥3.9 for PEP 585
+        # generics (e.g. list[float] annotations). RHEL 8 ships python3=3.6.8
+        # by default, so fall through a search list before giving up. Avoid uv
+        # to side-step x86/ARM venv mismatch on GH200.
         if [ -f "$SCRIPT_DIR/postprocess.py" ]; then
+            PY=""
+            for cand in python3.13 python3.12 python3.11 python3.10 python3.9 python3; do
+                if command -v "$cand" >/dev/null 2>&1; then
+                    ver=$("$cand" -c 'import sys; print(sys.version_info[:2])' 2>/dev/null)
+                    case "$ver" in
+                        "(3, 9)"|"(3, 10)"|"(3, 11)"|"(3, 12)"|"(3, 13)"|"(3, 14)")
+                            PY="$cand"; break ;;
+                    esac
+                fi
+            done
             echo ""
-            echo "  Post-processing (drop cold-start passes)..."
-            python3 "$SCRIPT_DIR/postprocess.py" "$SCRIPT_DIR/rajaperf-compare-raw.csv" \
-                --output "$SCRIPT_DIR/rajaperf-compare-clean.csv" 2>&1 || true
+            if [ -n "$PY" ]; then
+                echo "  Post-processing (drop cold-start passes; using $PY)..."
+                "$PY" "$SCRIPT_DIR/postprocess.py" "$SCRIPT_DIR/rajaperf-compare-raw.csv" \
+                    --output "$SCRIPT_DIR/rajaperf-compare-clean.csv" 2>&1 || true
+            else
+                echo "  Skipping post-processing: no Python ≥3.9 found on host."
+                echo "  (raw CSV at rajaperf-compare-raw.csv is still usable for review.)"
+            fi
         fi
     fi
 

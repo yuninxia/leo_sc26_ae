@@ -67,14 +67,15 @@ def main():
     # whose root cause LEO can attribute to a single dependency, before vs.
     # after LEO's pruning pipeline. Higher is better; bigger improvement
     # (before → after) means LEO recovers more attributable dependencies.
-    print("============================================================")
-    print("  Figure 5: Single Dependency Coverage (SDC) by GPU Vendor")
-    print("  Improvement from LEO's analysis pipeline; values are")
-    print("  before → after (higher is better)")
-    print("============================================================")
+    print("=========================================================================")
+    print("  Figure 5: Single Dependency Coverage by GPU Vendor")
+    print("  Each cell shows the fraction of stalled instructions whose root cause")
+    print("  LEO attributes to a single dependency, before → after LEO's pruning")
+    print("  pipeline (higher is better; larger before→after improvement is better).")
+    print("=========================================================================")
     print(f"{'Kernel':<20} {'NVIDIA':>16} {'AMD':>16} {'Intel':>16}")
-    print(f"{'':20} {'SDC % b→a':>16} {'SDC % b→a':>16} {'SDC % b→a':>16}")
-    print("-" * 70)
+    print(f"{'':20} {'before → after %':>16} {'before → after %':>16} {'before → after %':>16}")
+    print("-" * 73)
 
     def fmt(result):
         if result is None:

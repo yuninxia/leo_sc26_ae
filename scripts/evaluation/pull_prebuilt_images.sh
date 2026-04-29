@@ -51,30 +51,32 @@ for wl in "${WL_ARRAY[@]}"; do
 
     echo ""
     echo "--> $image"
-    if docker pull "$image" 2>&1 | tail -3; then
-        # Tag locally as :latest so existing scripts (runme.sh, run_compare.sh)
-        # find the image without needing the registry prefix.
+    # Try the primary tag silently. Vendor images (rajaperf/lulesh/etc.) don't
+    # always have a per-LEO-release tag — they're stable across releases since
+    # they don't bake the LEO source — so we fall back to :latest cleanly
+    # without printing scary "Error response from daemon" lines unless every
+    # candidate fails.
+    if docker pull "$image" >/dev/null 2>&1; then
         docker tag "$image" "$localtag"
-        echo "    tagged as $localtag"
+        echo "    pulled $image, tagged as $localtag"
     elif [[ "$TAG" != "latest" ]]; then
-        # Fallback to :latest. Vendor images (rajaperf/lulesh/etc.) are stable
-        # across LEO releases — they don't bake the LEO source — so :latest is
-        # equivalent to the most recent versioned tag. Only leo-base-universal
-        # carries LEO; for that one we always have a versioned tag pushed.
         fallback="${REGISTRY}/leo-${wl}-${VENDOR}:latest"
         [[ "$wl" == "base-universal" ]] && fallback="${REGISTRY}/leo-base-universal:latest"
-        echo "    primary tag :${TAG} unavailable; trying :latest fallback"
-        echo "    $fallback"
-        if docker pull "$fallback" 2>&1 | tail -3; then
+        echo "    :${TAG} not published, falling back to :latest ($fallback)"
+        if docker pull "$fallback" >/dev/null 2>&1; then
             docker tag "$fallback" "$localtag"
-            echo "    tagged as $localtag (from :latest fallback)"
+            echo "    pulled $fallback, tagged as $localtag"
         else
-            echo "    WARN: both :${TAG} and :latest pulls failed — fall back to build:"
-            echo "          bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
+            echo "    ERROR: both :${TAG} and :latest pulls failed; details:"
+            docker pull "$fallback" 2>&1 | sed 's/^/      /' | tail -3
+            echo "    fall back to build:"
+            echo "      bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
         fi
     else
-        echo "    WARN: pull failed — fall back to build:"
-        echo "          bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
+        echo "    ERROR: pull failed; details:"
+        docker pull "$image" 2>&1 | sed 's/^/      /' | tail -3
+        echo "    fall back to build:"
+        echo "      bash scripts/evaluation/build_workload_image.sh ${VENDOR} ${wl}"
     fi
 done
 

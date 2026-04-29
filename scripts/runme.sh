@@ -118,7 +118,7 @@ else
 fi
 
 SDC_OUT="$LOG_DIR/sdc_output.txt"
-run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sdc.sh' > '$SDC_OUT' 2>&1 && tail -25 '$SDC_OUT'"
+run_step "collect_sdc.sh (Figure 5, ~10-15 min)" bash -c "bash '$HERE/collect_sdc.sh' > '$SDC_OUT' 2>&1 && cat '$SDC_OUT'"
 
 run_step "verify SHA-256 against committed reference" bash -c "cd '$LEO_ROOT' && sha256sum -c sdc_coverage_reference.txt.sha256 && echo 'SHA-256 of sdc_coverage_reference.txt matched the committed paper reference.'"
 
@@ -228,7 +228,7 @@ echo ""
 echo "  Wall-clock: $(( (END_ALL - START_ALL) / 60 )) min $(( (END_ALL - START_ALL) % 60 )) s"
 echo ""
 echo "  Outputs:"
-echo "    Figure 5 SDC table:        $SDC_OUT"
+echo "    Figure 5 Single Dependency Coverage table:  $SDC_OUT"
 echo "    Figure 5 SHA-256 verified: OK (against committed reference)"
 if [ "$DO_TABLE_IV" = true ]; then
   echo "    RAJAPerf summary CSV (${TABLE_IV_VENDOR}):      $LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv"
