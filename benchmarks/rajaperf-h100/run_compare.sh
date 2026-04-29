@@ -159,44 +159,27 @@ if [ -n "$DOCKER_IMAGE" ] && [ ! -f /.dockerenv ]; then
     # Print Docker output (everything except CSV markers)
     echo "$DOCKER_OUTPUT" | grep -v '^=== CSV_'
 
-    # Extract CSVs from Docker output and save to host
+    # Extract CSVs from Docker output and save to host. Postprocess (drop
+    # cold-start passes, compute robust stats) runs inside the container — its
+    # python3 is Ubuntu-22.04 stock 3.10+ which has the PEP 585 generics
+    # postprocess.py uses. Avoiding host python3 sidesteps RHEL 8 (3.6.8) and
+    # x86/ARM venv-mismatch concerns on GH200.
     echo "$DOCKER_OUTPUT" | sed -n '/^=== CSV_RAW_BEGIN ===/,/^=== CSV_RAW_END ===/{ /^===/d; p }' \
         > "$SCRIPT_DIR/rajaperf-compare-raw.csv"
     echo "$DOCKER_OUTPUT" | sed -n '/^=== CSV_SUMMARY_BEGIN ===/,/^=== CSV_SUMMARY_END ===/{ /^===/d; p }' \
         > "$SCRIPT_DIR/rajaperf-compare-summary.csv"
+    echo "$DOCKER_OUTPUT" | sed -n '/^=== CSV_CLEAN_BEGIN ===/,/^=== CSV_CLEAN_END ===/{ /^===/d; p }' \
+        > "$SCRIPT_DIR/rajaperf-compare-clean.csv"
 
     RAW_LINES=$(wc -l < "$SCRIPT_DIR/rajaperf-compare-raw.csv")
+    CLEAN_LINES=$(wc -l < "$SCRIPT_DIR/rajaperf-compare-clean.csv")
     if [ "$RAW_LINES" -gt 1 ]; then
         echo ""
         echo "  CSV saved to:"
         echo "    $SCRIPT_DIR/rajaperf-compare-raw.csv ($((RAW_LINES - 1)) samples)"
         echo "    $SCRIPT_DIR/rajaperf-compare-summary.csv"
-
-        # Post-process: drop cold-start passes and compute robust statistics.
-        # Uses only stdlib (csv, statistics) but needs Python ≥3.9 for PEP 585
-        # generics (e.g. list[float] annotations). RHEL 8 ships python3=3.6.8
-        # by default, so fall through a search list before giving up. Avoid uv
-        # to side-step x86/ARM venv mismatch on GH200.
-        if [ -f "$SCRIPT_DIR/postprocess.py" ]; then
-            PY=""
-            for cand in python3.13 python3.12 python3.11 python3.10 python3.9 python3; do
-                if command -v "$cand" >/dev/null 2>&1; then
-                    ver=$("$cand" -c 'import sys; print(sys.version_info[:2])' 2>/dev/null)
-                    case "$ver" in
-                        "(3, 9)"|"(3, 10)"|"(3, 11)"|"(3, 12)"|"(3, 13)"|"(3, 14)")
-                            PY="$cand"; break ;;
-                    esac
-                fi
-            done
-            echo ""
-            if [ -n "$PY" ]; then
-                echo "  Post-processing (drop cold-start passes; using $PY)..."
-                "$PY" "$SCRIPT_DIR/postprocess.py" "$SCRIPT_DIR/rajaperf-compare-raw.csv" \
-                    --output "$SCRIPT_DIR/rajaperf-compare-clean.csv" 2>&1 || true
-            else
-                echo "  Skipping post-processing: no Python ≥3.9 found on host."
-                echo "  (raw CSV at rajaperf-compare-raw.csv is still usable for review.)"
-            fi
+        if [ "$CLEAN_LINES" -gt 1 ]; then
+            echo "    $SCRIPT_DIR/rajaperf-compare-clean.csv (cold-start passes dropped, $((CLEAN_LINES - 1)) samples)"
         fi
     fi
 
@@ -615,6 +598,21 @@ echo ""
 echo "=== CSV_SUMMARY_BEGIN ==="
 cat "$CSV_SUMMARY"
 echo "=== CSV_SUMMARY_END ==="
+
+# Post-process inside the container: drop cold-start passes and compute robust
+# statistics. The container's python3 is Ubuntu-22.04 stock (3.10+), which has
+# the PEP 585 generics that postprocess.py uses. Doing this in-container means
+# the host doesn't need a modern Python.
+if [ -f /opt/rajaperf-compare/postprocess.py ] && command -v python3 >/dev/null 2>&1; then
+    CLEAN_FILE="/opt/rajaperf-compare-clean.csv"
+    if python3 /opt/rajaperf-compare/postprocess.py "$CSV_FILE" --output "$CLEAN_FILE" >/dev/null 2>&1 \
+        && [ -s "$CLEAN_FILE" ]; then
+        echo ""
+        echo "=== CSV_CLEAN_BEGIN ==="
+        cat "$CLEAN_FILE"
+        echo "=== CSV_CLEAN_END ==="
+    fi
+fi
 
 echo ""
 echo "  Source diff:"

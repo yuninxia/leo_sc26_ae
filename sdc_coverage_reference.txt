@@ -1,11 +1,12 @@
-============================================================
-  Figure 5: Single Dependency Coverage (SDC) by GPU Vendor
-  Improvement from LEO's analysis pipeline; values are
-  before → after (higher is better)
-============================================================
+=========================================================================
+  Figure 5: Single Dependency Coverage by GPU Vendor
+  Each cell shows the fraction of stalled instructions whose root cause
+  LEO attributes to a single dependency, before → after LEO's pruning
+  pipeline (higher is better; larger before→after improvement is better).
+=========================================================================
 Kernel                         NVIDIA              AMD            Intel
-                            SDC % b→a        SDC % b→a        SDC % b→a
-----------------------------------------------------------------------
+                     before → after % before → after % before → after %
+-------------------------------------------------------------------------
 RAJAPerf Kernels:
 MASS3DEA              61.4→ 83.5%  99.0→ 98.0%  80.0→ 80.0%
 LTIMES_NOVIEW         67.0→ 90.3%  66.7→ 86.7%  59.7→ 59.9%
