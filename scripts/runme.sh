@@ -11,9 +11,9 @@
 # Usage:
 #   bash scripts/runme.sh                          # Figure 5 + sha256 verify (CPU-only, ~20 min)
 #   bash scripts/runme.sh --use-prebuilt           # pull pre-built leo-base-universal from Docker Hub (~3 min vs ~10 min build)
-#   bash scripts/runme.sh --with-table-iv          # + Table IV (15 RAJAPerf kernels + 6 HPC apps = 21 workloads), GPU required
+#   bash scripts/runme.sh --with-table-iv          # + all 21 workloads (15 RAJAPerf kernels + 6 HPC apps), GPU required
 #   bash scripts/runme.sh --with-table-iv --use-prebuilt        # same, but pull all per-app images from Docker Hub (faster)
-#   bash scripts/runme.sh --with-table-iv --rajaperf-only       # Table IV only, skip HPC apps
+#   bash scripts/runme.sh --with-table-iv --rajaperf-only       # 15 RAJAPerf kernels only, skip the 6 HPC apps
 #   bash scripts/runme.sh --with-table-iv --vendor amd          # AMD MI300A path
 #   bash scripts/runme.sh --with-table-iv --vendor intel        # Intel PVC path (Kripke/QuickSilver/llama.cpp auto-skipped — no SYCL ports)
 #   bash scripts/runme.sh --with-table-iv --gpu-arch 80         # A100 (sm_80) instead of H100/GH200 (sm_90 default)
@@ -135,7 +135,7 @@ if [ "$DO_TABLE_IV" = true ]; then
   run_step "download RAJAPerf baselines (original + optimized)" \
     bash "$HERE/evaluation/download_benchmarks.sh"
 
-  run_step "Table IV ${TABLE_IV_VENDOR}: run_compare (all 15 RAJAPerf kernels)" \
+  run_step "RAJAPerf ${TABLE_IV_VENDOR}: run_compare (all 15 kernels)" \
     bash "$HERE/evaluation/run_workload_rajaperf.sh" --vendor "$TABLE_IV_VENDOR"
 
   run_step "compare speedups vs rajaperf-compare-summary.csv" bash -c "
@@ -155,9 +155,9 @@ PYEOF
       echo 'summary CSV not produced — check preceding step'; exit 1
     fi"
 
-  # ---------------- HPC apps (Table IV's 6 HPC-app rows) ---------------------
-  # Six HPC apps from the paper's Table IV row set (Table IV = 15 RAJAPerf
-  # kernels + 6 HPC apps = 21 workloads). Run via the appendix's
+  # ---------------- HPC apps (6 of the 21 evaluated workloads) ---------------
+  # Six HPC apps that complete the 21-workload set alongside the 15 RAJAPerf
+  # kernels. Run via the appendix's
   # `bash benchmarks/<name>/run_compare_<vendor>.sh`. Each one drives a
   # vendor-specific Docker image (leo-<workload>-<vendor>) — pulled from
   # Docker Hub under --use-prebuilt, otherwise built locally via
@@ -209,7 +209,7 @@ PYEOF
       # uses a single multi-vendor script with --vendor).
       local cmd_template="${HPC_SCRIPTS[$app]}"
       local cmd="${cmd_template//<vendor>/$TABLE_IV_VENDOR}"
-      run_step "Table IV ${app} ${TABLE_IV_VENDOR}: bash benchmarks/${app}/${cmd}" \
+      run_step "HPC app ${app} ${TABLE_IV_VENDOR}: bash benchmarks/${app}/${cmd}" \
         bash -c "cd '$LEO_ROOT' && bash benchmarks/${app}/${cmd}" || true
     }
 
@@ -231,7 +231,7 @@ echo "  Outputs:"
 echo "    Figure 5 SDC table:        $SDC_OUT"
 echo "    Figure 5 SHA-256 verified: OK (against committed reference)"
 if [ "$DO_TABLE_IV" = true ]; then
-  echo "    Table IV CSV (${TABLE_IV_VENDOR}):      $LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv"
+  echo "    RAJAPerf summary CSV (${TABLE_IV_VENDOR}):      $LEO_ROOT/benchmarks/rajaperf-h100/rajaperf-compare-summary.csv"
 fi
 echo ""
 echo "  Logs:"
@@ -240,17 +240,17 @@ echo "    Master:    $MASTER_LOG"
 echo ""
 if [ "$DO_TABLE_IV" = true ]; then
   if [ "$DO_HPC_APPS" = true ]; then
-    echo "  HPC apps (Table IV rows 16-21): auto-run for ${TABLE_IV_VENDOR}."
-    echo "    Per-app step logs in $LOG_DIR/step*Table_IV*.log"
-    echo "    Note: HipKittens (Section VI.D, AMD-only RMSNorm) is not in Table IV/V"
-    echo "    and is not auto-run. See benchmarks/hipkittens/ if added in a future release."
+    echo "  HPC apps (6 apps): auto-run for ${TABLE_IV_VENDOR}."
+    echo "    Per-app step logs in $LOG_DIR/step*HPC_app*.log"
+    echo "    Note: HipKittens (AMD-only RMSNorm case study) is not auto-run."
+    echo "    See benchmarks/hipkittens/ if added in a future release."
   else
     echo "  HPC apps skipped (--rajaperf-only). To run them later:"
     echo "    bash benchmarks/<workload>/run_compare_${TABLE_IV_VENDOR}.sh"
   fi
 else
   echo "  Next (optional, requires GPU): add --with-table-iv to also build"
-  echo "  the per-vendor RAJAPerf chain and reproduce Table IV (all 21"
-  echo "  workloads = 15 RAJAPerf kernels + 6 HPC apps) in one unified flow."
+  echo "  the per-vendor RAJAPerf chain and reproduce all 21 evaluated"
+  echo "  workloads (15 RAJAPerf kernels + 6 HPC apps) in one unified flow."
 fi
 echo "============================================================"
