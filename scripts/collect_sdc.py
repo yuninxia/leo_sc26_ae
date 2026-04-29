@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Collect per-kernel Single Dependency Coverage for all Table IV workloads."""
 
-import warnings
+import os
+import sys
+
 # Suppress hpcanalysis compile-time SyntaxWarnings (`\(` regex escape sequences
-# in queries.py). Harmless on supported Python versions; just clutters output.
-warnings.filterwarnings("ignore", category=SyntaxWarning, module=r"hpcanalysis\..*")
+# in queries.py). In-script filterwarnings doesn't catch these because they
+# fire during module compilation, before user code runs. Re-exec self with
+# PYTHONWARNINGS set so Python applies the filter at startup.
+if "ignore::SyntaxWarning" not in os.environ.get("PYTHONWARNINGS", ""):
+    existing = os.environ.get("PYTHONWARNINGS", "")
+    os.environ["PYTHONWARNINGS"] = "ignore::SyntaxWarning" + ("," + existing if existing else "")
+    os.execv(sys.executable, [sys.executable] + sys.argv)
 
 import subprocess
 import re
-import os
 
 PK = "/data/per-kernel"
 

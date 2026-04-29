@@ -59,4 +59,5 @@ docker run --rm \
   -v "$R/nvidia-gilgamesh-kripke-20260325-141654:/data/nvidia-kripke:ro" \
   -v "$R/amd-kripke-20260325-141150:/data/amd-kripke:ro" \
   -e PYTHONUNBUFFERED=1 \
+  -e PYTHONWARNINGS=ignore::SyntaxWarning \
   leo-base-universal -c "uv run --quiet python scripts/collect_sdc.py"

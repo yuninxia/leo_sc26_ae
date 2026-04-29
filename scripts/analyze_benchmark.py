@@ -18,15 +18,21 @@ Examples:
     python scripts/analyze_benchmark.py /path/to/measurements --arch mi300 --top-n 5
 """
 
-import argparse
+import os
 import sys
-import warnings
-from pathlib import Path
 
 # Suppress hpcanalysis compile-time SyntaxWarnings (`\(` regex escape sequences
-# in queries.py). Harmless on supported Python versions; just clutters output.
-# Must run before any indirect import of hpcanalysis.
-warnings.filterwarnings("ignore", category=SyntaxWarning, module=r"hpcanalysis\..*")
+# in queries.py). Harmless on supported Python versions, just clutters output.
+# In-script `warnings.filterwarnings` doesn't catch these because the warnings
+# fire during module compilation, before user code runs. We re-exec ourselves
+# once with PYTHONWARNINGS set so Python applies the filter at startup.
+if "ignore::SyntaxWarning" not in os.environ.get("PYTHONWARNINGS", ""):
+    existing = os.environ.get("PYTHONWARNINGS", "")
+    os.environ["PYTHONWARNINGS"] = "ignore::SyntaxWarning" + ("," + existing if existing else "")
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+import argparse
+from pathlib import Path
 
 # Add src to path for development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
