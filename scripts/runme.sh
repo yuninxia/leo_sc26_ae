@@ -33,7 +33,7 @@ cd "$LEO_ROOT"
 DO_TABLE_IV=false
 DO_HPC_APPS=true     # under --with-table-iv, also run the 6 HPC apps; opt-out via --rajaperf-only
 USE_PREBUILT=false
-PREBUILT_TAG="${PREBUILT_TAG:-v0.1.18}"
+PREBUILT_TAG="${PREBUILT_TAG:-v0.1.20-sc26-ae}"
 TABLE_IV_VENDOR="nvidia"
 TABLE_IV_GPU_ARCH="${GPU_ARCH:-90}"
 while [[ $# -gt 0 ]]; do
