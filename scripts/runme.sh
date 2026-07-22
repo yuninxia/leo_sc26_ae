@@ -151,9 +151,12 @@ demo_kernel_one_vendor amd    mi300 "AMD MI300"
 demo_kernel_one_vendor intel  pvc   "Intel PVC"
 
 if [ "$DO_TABLE_IV" = true ]; then
+  # nvidia-arm is a 2-layer chain (HPCToolkit baked into the base image)
+  TOOL_LAYER="hpctoolkit,"
+  [ "$TABLE_IV_VENDOR" = "nvidia-arm" ] && TOOL_LAYER=""
   if [ "$USE_PREBUILT" = true ]; then
     run_step "pull pre-built leo-rajaperf-${TABLE_IV_VENDOR}:${PREBUILT_TAG} from Docker Hub (~3-5 min)" \
-      bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads base,hpctoolkit,rajaperf --tag "$PREBUILT_TAG"
+      bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads "base,${TOOL_LAYER}rajaperf" --tag "$PREBUILT_TAG"
   else
     run_step "build leo-rajaperf-${TABLE_IV_VENDOR} (3-layer chain)" \
       env GPU_ARCH="$TABLE_IV_GPU_ARCH" \
@@ -226,7 +229,7 @@ PYEOF
           bash -c "echo 'leo-${app}-${TABLE_IV_VENDOR}:latest exists — skipping pull/build.'" || true
       elif [ "$USE_PREBUILT" = true ]; then
         run_step "pull leo-${app}-${TABLE_IV_VENDOR}:${PREBUILT_TAG} from Docker Hub" \
-          bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads "base,hpctoolkit,$app" --tag "$PREBUILT_TAG" || true
+          bash "$HERE/evaluation/pull_prebuilt_images.sh" --vendor "$TABLE_IV_VENDOR" --workloads "base,${TOOL_LAYER}$app" --tag "$PREBUILT_TAG" || true
       else
         run_step "build leo-${app}-${TABLE_IV_VENDOR} (3-layer chain)" \
           env GPU_ARCH="$TABLE_IV_GPU_ARCH" \

@@ -79,6 +79,10 @@ NEED_NVHPC=false
 
 if $NEED_NVHPC; then
     build_layer "leo-nvhpc-${VENDOR}" "$DOCKER_DIR/Dockerfile.nvhpc-${VENDOR}"
+elif [[ "$VENDOR" == "nvidia-arm" ]]; then
+    # nvidia-arm is a 2-layer chain: HPCToolkit is baked into the base image
+    # (see Dockerfile.base-nvidia-arm header); there is no hpctoolkit-nvidia-arm.
+    :
 else
     build_layer "leo-hpctoolkit-${VENDOR}" "$DOCKER_DIR/Dockerfile.hpctoolkit-${VENDOR}"
 fi
