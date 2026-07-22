@@ -39,3 +39,39 @@ optimized build comparison all work without manual intervention. Other kernels
 in Table IV were not smoke-tested here; they reuse the same infrastructure, so
 a failure mode specific to (e.g.) LTIMES or VOL3D would be an upstream RAJAPerf
 issue, not an AE-path issue.
+
+---
+
+## 2026-07-22 — CPU-only Figure-5 path, reviewer-style end-to-end (odyssey, x86-64)
+
+**Environment** — `odyssey` (2× 24c EPYC-class hosts of the quad-MI300A node, x86-64,
+RHEL 8.10, Docker 29.6.2); fresh `git clone` of `main` (includes the
+comma-list `--kernel` filter fix and the `v0.1.21-sc26-ae` default
+`PREBUILT_TAG`); no cached leo images present before the run (verified with
+`docker images`); GPUs untouched (another user's job was running on them —
+irrelevant for this CPU-only path).
+
+**Procedure** — exactly the AE-recommended reviewer flow:
+
+```
+git clone https://github.com/yuninxia/leo_sc26_ae.git
+cd leo_sc26_ae
+bash scripts/runme.sh --use-prebuilt
+```
+
+**Result** — all steps completed unattended:
+
+- Step 1 download_data (1 GB → 5.6 GB): 174 s
+- Step 2 docker pull `jssonxia/leo-base-universal:v0.1.21-sc26-ae` (4.63 GB): 178 s
+- Step 3 collect_sdc.sh (Figure 5) + per-kernel cross-vendor demo: remainder
+- **Total wall-clock: 16 min 58 s** (within the documented 20–30 min budget)
+- **Figure 5 SHA-256: OK** — output byte-identical to the committed
+  `sdc_coverage_reference.txt`
+
+**Verdict:** PASS. First end-to-end validation of the CPU-only path from a
+clean environment via Docker Hub prebuilt images; the default prebuilt tag now
+matches the appendix's pinned `v0.1.21-sc26-ae`.
+
+**Minor issue observed:** `download_data.sh` still echoes
+"You can now run: bash scripts/time_analysis.sh" — that script was removed;
+the hint should point at `scripts/collect_sdc.sh` / `scripts/runme.sh`.
