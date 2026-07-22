@@ -70,7 +70,7 @@ Three Zenodo records back this artifact:
 
 - **Source code** (concept DOI, always latest): [10.5281/zenodo.19704349](https://doi.org/10.5281/zenodo.19704349)
 - **Profiling data tarball** (~1 GB, CC0): [10.5281/zenodo.19705577](https://doi.org/10.5281/zenodo.19705577)
-- **Pre-built Docker images** (NVIDIA chain, ~12 GB, Apache-2.0): [10.5281/zenodo.19752199](https://doi.org/10.5281/zenodo.19752199) — mirror of `jssonxia/leo-*-nvidia` on Docker Hub. `gunzip -c leo-sc26-ae-images-v0.1.14.tar.gz | docker load` to skip the ~30 min build.
+- **Pre-built Docker images** (NVIDIA chain, ~12 GB, Apache-2.0): [10.5281/zenodo.19752199](https://doi.org/10.5281/zenodo.19752199) — mirror of `jssonxia/leo-*-nvidia` on Docker Hub. The deposit is split into 4 parts to fit Zenodo's per-file limit; reassemble and load with `cat leo-sc26-ae-images-v0.1.21.tar.gz.part-* | gunzip | docker load` to skip the ~30 min build.
 
 `download_data.sh` primarily pulls from the GitHub Release `v1.0-sc26-data`; if the GitHub URL is unreachable (e.g., the source repo is temporarily private), it automatically falls back to the Zenodo data mirror.
 

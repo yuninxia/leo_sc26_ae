@@ -5,14 +5,14 @@
 # source Dockerfiles.
 #
 # Images are published under the jssonxia/ namespace and tagged with the
-# AE release tag (e.g., v0.1.14-sc26-ae). See the appendix for which tag
+# AE release tag (e.g., v0.1.21-sc26-ae). See the appendix for which tag
 # pairs with each AE version.
 #
 # Usage:
 #   bash scripts/evaluation/pull_prebuilt_images.sh                  # pull all NVIDIA x86_64 images (default)
 #   bash scripts/evaluation/pull_prebuilt_images.sh --vendor nvidia-arm  # GH200 / Jetson ARM64 NVIDIA
 #   bash scripts/evaluation/pull_prebuilt_images.sh --workloads rajaperf,minibude,kripke
-#   bash scripts/evaluation/pull_prebuilt_images.sh --tag v0.1.14-sc26-ae
+#   bash scripts/evaluation/pull_prebuilt_images.sh --tag v0.1.21-sc26-ae
 #
 # Trust note: image Dockerfiles are shipped in the artifact under
 # scripts/evaluation/docker/. Reviewers who prefer to rebuild for
