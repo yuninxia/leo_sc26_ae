@@ -64,7 +64,7 @@ No GPU needed for LEO analysis — one command downloads all pre-collected measu
 bash scripts/download_data.sh
 ```
 
-This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `time_analysis.sh`) run without GPU hardware.
+This pulls `leo-sc26-measurements.tar.gz` from the GitHub Release and extracts to `results/`. After that, all analysis scripts (`collect_sdc.sh`, `runme.sh`, `analyze_benchmark.py`) run without GPU hardware.
 
 Three Zenodo records back this artifact:
 
@@ -141,8 +141,8 @@ Uses Docker + pre-collected HPCToolkit databases. No GPU needed.
 # Compute SDC metrics for Figure 5
 bash scripts/collect_sdc.sh
 
-# Measure LEO analysis time
-bash scripts/time_analysis.sh
+# Measure LEO analysis time on any shipped database
+uv run python scripts/analyze_benchmark.py results/per-kernel/Apps_MASS3DEA/amd/hpctoolkit-raja-perf.exe-measurements --arch mi300 --top-n 1
 ```
 
 ### Task 2: Run RAJAPerf benchmarks (requires GPUs)
