@@ -25,7 +25,7 @@ Verify the compiler is recent enough: `gcc --version` should report 11.x or newe
 
 **Fix:** Rebuild HPCToolkit with `meson setup build --buildtype=release`.
 
-See: `docs/INTEL_EVAL_TROUBLESHOOTING.md` in the main LEO repo for full analysis.
+Full analysis: the debug TBB libraries make `hpcstruct` orders of magnitude slower and can abort on assertion checks; a release-mode rebuild (`--buildtype=release`) links the optimized TBB and resolves both. (Previously documented in the development repo's `INTEL_EVAL_TROUBLESHOOTING.md`, summarized here so this artifact is self-contained.)
 
 ### GED library not found (Intel)
 
