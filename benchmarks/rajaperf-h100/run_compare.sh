@@ -300,7 +300,8 @@ if [ -z "$OPTIMIZED_KERNELS" ]; then
 fi
 
 if [ -n "$KERNEL_FILTER" ]; then
-    OPTIMIZED_KERNELS=$(echo "$OPTIMIZED_KERNELS" | grep -i "$KERNEL_FILTER" || true)
+    # Accept a single name or a comma-separated list (e.g. MASS3DEA,LTIMES,3MM)
+    OPTIMIZED_KERNELS=$(echo "$OPTIMIZED_KERNELS" | grep -iE "$(echo "$KERNEL_FILTER" | tr ',' '|')" || true)
     if [ -z "$OPTIMIZED_KERNELS" ]; then
         echo "No optimized kernels match filter '$KERNEL_FILTER'"
         exit 0
